@@ -7,10 +7,10 @@ head
     link(href="/signin.css", rel="stylesheet")
 body
     .container
-        form.form-signin(action="/authorize", method="post")
+        form#loginForm.form-signin(action="/authorize", method="post")
             h2.form-signin-heading Please sign in
-            label(for="inputEmail", class="sr-only") Email address
-            input#inputEmail.form-control(type="email", placeholder="Email address", required, autofocus)
+            label(for="inputLogin", class="sr-only") Login
+            input#inputLogin.form-control(type="text", placeholder="login", required, autofocus)
             label.sr-only(for="inputPassword") Password
             input#inputPassword.form-control(type="password", placeholder="Password", required)
             .checkbox

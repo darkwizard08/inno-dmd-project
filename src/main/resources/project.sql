@@ -1,5 +1,5 @@
 --
--- PostgreSQL database dump
+-- kittnQL database dump
 --
 
 -- Dumped from database version 9.4.4
@@ -18,23 +18,11 @@ SET client_min_messages = warning;
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
 --
 
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- TOC entry 2152 (class 0 OID 0)
--- Dependencies: 192
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
 SET search_path = public, pg_catalog;
 
 --
 -- TOC entry 544 (class 1247 OID 24847)
--- Name: pubtype; Type: TYPE; Schema: public; Owner: postgres
+-- Name: pubtype; Type: TYPE; Schema: public; Owner: kittn
 --
 
 CREATE TYPE pubtype AS ENUM (
@@ -46,7 +34,7 @@ CREATE TYPE pubtype AS ENUM (
 );
 
 
-ALTER TYPE pubtype OWNER TO postgres;
+ALTER TYPE pubtype OWNER TO kittn;
 
 SET default_tablespace = '';
 
@@ -54,7 +42,7 @@ SET default_with_oids = false;
 
 --
 -- TOC entry 174 (class 1259 OID 24873)
--- Name: Area; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Area; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Area" (
@@ -63,11 +51,11 @@ CREATE TABLE "Area" (
 );
 
 
-ALTER TABLE "Area" OWNER TO postgres;
+ALTER TABLE "Area" OWNER TO kittn;
 
 --
 -- TOC entry 188 (class 1259 OID 25053)
--- Name: Article; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Article; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Article" (
@@ -77,11 +65,11 @@ CREATE TABLE "Article" (
 );
 
 
-ALTER TABLE "Article" OWNER TO postgres;
+ALTER TABLE "Article" OWNER TO kittn;
 
 --
 -- TOC entry 177 (class 1259 OID 24897)
--- Name: Author; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Author; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Author" (
@@ -90,11 +78,11 @@ CREATE TABLE "Author" (
 );
 
 
-ALTER TABLE "Author" OWNER TO postgres;
+ALTER TABLE "Author" OWNER TO kittn;
 
 --
 -- TOC entry 191 (class 1259 OID 25070)
--- Name: Author_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: Author_ID_seq; Type: SEQUENCE; Schema: public; Owner: kittn
 --
 
 CREATE SEQUENCE "Author_ID_seq"
@@ -105,12 +93,12 @@ CREATE SEQUENCE "Author_ID_seq"
     CACHE 1;
 
 
-ALTER TABLE "Author_ID_seq" OWNER TO postgres;
+ALTER TABLE "Author_ID_seq" OWNER TO kittn;
 
 --
 -- TOC entry 2153 (class 0 OID 0)
 -- Dependencies: 191
--- Name: Author_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: Author_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: kittn
 --
 
 ALTER SEQUENCE "Author_ID_seq" OWNED BY "Author"."ID";
@@ -118,7 +106,7 @@ ALTER SEQUENCE "Author_ID_seq" OWNED BY "Author"."ID";
 
 --
 -- TOC entry 179 (class 1259 OID 24913)
--- Name: Book; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Book; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Book" (
@@ -127,11 +115,11 @@ CREATE TABLE "Book" (
 );
 
 
-ALTER TABLE "Book" OWNER TO postgres;
+ALTER TABLE "Book" OWNER TO kittn;
 
 --
 -- TOC entry 180 (class 1259 OID 24926)
--- Name: Conference; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Conference; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Conference" (
@@ -141,11 +129,11 @@ CREATE TABLE "Conference" (
 );
 
 
-ALTER TABLE "Conference" OWNER TO postgres;
+ALTER TABLE "Conference" OWNER TO kittn;
 
 --
 -- TOC entry 185 (class 1259 OID 25016)
--- Name: Incollection; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Incollection; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Incollection" (
@@ -155,11 +143,11 @@ CREATE TABLE "Incollection" (
 );
 
 
-ALTER TABLE "Incollection" OWNER TO postgres;
+ALTER TABLE "Incollection" OWNER TO kittn;
 
 --
 -- TOC entry 186 (class 1259 OID 25029)
--- Name: Inproceedings; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Inproceedings; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Inproceedings" (
@@ -169,11 +157,11 @@ CREATE TABLE "Inproceedings" (
 );
 
 
-ALTER TABLE "Inproceedings" OWNER TO postgres;
+ALTER TABLE "Inproceedings" OWNER TO kittn;
 
 --
 -- TOC entry 181 (class 1259 OID 24934)
--- Name: InstAuthPub; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: InstAuthPub; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "InstAuthPub" (
@@ -183,11 +171,11 @@ CREATE TABLE "InstAuthPub" (
 );
 
 
-ALTER TABLE "InstAuthPub" OWNER TO postgres;
+ALTER TABLE "InstAuthPub" OWNER TO kittn;
 
 --
 -- TOC entry 178 (class 1259 OID 24905)
--- Name: Institution; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Institution; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Institution" (
@@ -196,11 +184,11 @@ CREATE TABLE "Institution" (
 );
 
 
-ALTER TABLE "Institution" OWNER TO postgres;
+ALTER TABLE "Institution" OWNER TO kittn;
 
 --
 -- TOC entry 173 (class 1259 OID 24865)
--- Name: Journal; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Journal; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Journal" (
@@ -212,11 +200,11 @@ CREATE TABLE "Journal" (
 );
 
 
-ALTER TABLE "Journal" OWNER TO postgres;
+ALTER TABLE "Journal" OWNER TO kittn;
 
 --
 -- TOC entry 190 (class 1259 OID 25068)
--- Name: Journal_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: Journal_ID_seq; Type: SEQUENCE; Schema: public; Owner: kittn
 --
 
 CREATE SEQUENCE "Journal_ID_seq"
@@ -227,12 +215,12 @@ CREATE SEQUENCE "Journal_ID_seq"
     CACHE 1;
 
 
-ALTER TABLE "Journal_ID_seq" OWNER TO postgres;
+ALTER TABLE "Journal_ID_seq" OWNER TO kittn;
 
 --
 -- TOC entry 2154 (class 0 OID 0)
 -- Dependencies: 190
--- Name: Journal_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: Journal_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: kittn
 --
 
 ALTER SEQUENCE "Journal_ID_seq" OWNED BY "Journal"."ID";
@@ -240,7 +228,7 @@ ALTER SEQUENCE "Journal_ID_seq" OWNED BY "Journal"."ID";
 
 --
 -- TOC entry 175 (class 1259 OID 24881)
--- Name: Keyword; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Keyword; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Keyword" (
@@ -249,11 +237,11 @@ CREATE TABLE "Keyword" (
 );
 
 
-ALTER TABLE "Keyword" OWNER TO postgres;
+ALTER TABLE "Keyword" OWNER TO kittn;
 
 --
 -- TOC entry 187 (class 1259 OID 25043)
--- Name: Proceedings; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Proceedings; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Proceedings" (
@@ -262,11 +250,11 @@ CREATE TABLE "Proceedings" (
 );
 
 
-ALTER TABLE "Proceedings" OWNER TO postgres;
+ALTER TABLE "Proceedings" OWNER TO kittn;
 
 --
 -- TOC entry 182 (class 1259 OID 24954)
--- Name: PubArea; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: PubArea; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "PubArea" (
@@ -275,11 +263,11 @@ CREATE TABLE "PubArea" (
 );
 
 
-ALTER TABLE "PubArea" OWNER TO postgres;
+ALTER TABLE "PubArea" OWNER TO kittn;
 
 --
 -- TOC entry 183 (class 1259 OID 24969)
--- Name: PubKeyword; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: PubKeyword; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "PubKeyword" (
@@ -288,11 +276,11 @@ CREATE TABLE "PubKeyword" (
 );
 
 
-ALTER TABLE "PubKeyword" OWNER TO postgres;
+ALTER TABLE "PubKeyword" OWNER TO kittn;
 
 --
 -- TOC entry 172 (class 1259 OID 24857)
--- Name: Publication; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Publication; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Publication" (
@@ -303,11 +291,11 @@ CREATE TABLE "Publication" (
 );
 
 
-ALTER TABLE "Publication" OWNER TO postgres;
+ALTER TABLE "Publication" OWNER TO kittn;
 
 --
 -- TOC entry 189 (class 1259 OID 25066)
--- Name: Publication_ID_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: Publication_ID_seq; Type: SEQUENCE; Schema: public; Owner: kittn
 --
 
 CREATE SEQUENCE "Publication_ID_seq"
@@ -318,12 +306,12 @@ CREATE SEQUENCE "Publication_ID_seq"
     CACHE 1;
 
 
-ALTER TABLE "Publication_ID_seq" OWNER TO postgres;
+ALTER TABLE "Publication_ID_seq" OWNER TO kittn;
 
 --
 -- TOC entry 2155 (class 0 OID 0)
 -- Dependencies: 189
--- Name: Publication_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: Publication_ID_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: kittn
 --
 
 ALTER SEQUENCE "Publication_ID_seq" OWNED BY "Publication"."ID";
@@ -331,7 +319,7 @@ ALTER SEQUENCE "Publication_ID_seq" OWNED BY "Publication"."ID";
 
 --
 -- TOC entry 184 (class 1259 OID 24984)
--- Name: Published; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Published; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Published" (
@@ -340,11 +328,11 @@ CREATE TABLE "Published" (
 );
 
 
-ALTER TABLE "Published" OWNER TO postgres;
+ALTER TABLE "Published" OWNER TO kittn;
 
 --
 -- TOC entry 176 (class 1259 OID 24889)
--- Name: Publisher; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Publisher; Type: TABLE; Schema: public; Owner: kittn; Tablespace: 
 --
 
 CREATE TABLE "Publisher" (
@@ -353,11 +341,11 @@ CREATE TABLE "Publisher" (
 );
 
 
-ALTER TABLE "Publisher" OWNER TO postgres;
+ALTER TABLE "Publisher" OWNER TO kittn;
 
 --
 -- TOC entry 1967 (class 2604 OID 25072)
--- Name: ID; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: ID; Type: DEFAULT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Author" ALTER COLUMN "ID" SET DEFAULT nextval('"Author_ID_seq"'::regclass);
@@ -365,7 +353,7 @@ ALTER TABLE ONLY "Author" ALTER COLUMN "ID" SET DEFAULT nextval('"Author_ID_seq"
 
 --
 -- TOC entry 1966 (class 2604 OID 25074)
--- Name: ID; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: ID; Type: DEFAULT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Journal" ALTER COLUMN "ID" SET DEFAULT nextval('"Journal_ID_seq"'::regclass);
@@ -373,7 +361,7 @@ ALTER TABLE ONLY "Journal" ALTER COLUMN "ID" SET DEFAULT nextval('"Journal_ID_se
 
 --
 -- TOC entry 1965 (class 2604 OID 25073)
--- Name: ID; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: ID; Type: DEFAULT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Publication" ALTER COLUMN "ID" SET DEFAULT nextval('"Publication_ID_seq"'::regclass);
@@ -382,7 +370,7 @@ ALTER TABLE ONLY "Publication" ALTER COLUMN "ID" SET DEFAULT nextval('"Publicati
 --
 -- TOC entry 2127 (class 0 OID 24873)
 -- Dependencies: 174
--- Data for Name: Area; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Area; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -390,7 +378,7 @@ ALTER TABLE ONLY "Publication" ALTER COLUMN "ID" SET DEFAULT nextval('"Publicati
 --
 -- TOC entry 2141 (class 0 OID 25053)
 -- Dependencies: 188
--- Data for Name: Article; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Article; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 INSERT INTO "Article" VALUES (1, 1, '607-619');
@@ -1399,7 +1387,7 @@ INSERT INTO "Article" VALUES (1001, 52, '367-383');
 --
 -- TOC entry 2130 (class 0 OID 24897)
 -- Dependencies: 177
--- Data for Name: Author; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Author; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 INSERT INTO "Author" VALUES (1, 'Sanjeev Saxena');
@@ -2765,7 +2753,7 @@ INSERT INTO "Author" VALUES (1358, 'Guido Proietti');
 --
 -- TOC entry 2156 (class 0 OID 0)
 -- Dependencies: 191
--- Name: Author_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: Author_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: kittn
 --
 
 SELECT pg_catalog.setval('"Author_ID_seq"', 1358, true);
@@ -2774,7 +2762,7 @@ SELECT pg_catalog.setval('"Author_ID_seq"', 1358, true);
 --
 -- TOC entry 2132 (class 0 OID 24913)
 -- Dependencies: 179
--- Data for Name: Book; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Book; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -2782,7 +2770,7 @@ SELECT pg_catalog.setval('"Author_ID_seq"', 1358, true);
 --
 -- TOC entry 2133 (class 0 OID 24926)
 -- Dependencies: 180
--- Data for Name: Conference; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Conference; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -2790,7 +2778,7 @@ SELECT pg_catalog.setval('"Author_ID_seq"', 1358, true);
 --
 -- TOC entry 2138 (class 0 OID 25016)
 -- Dependencies: 185
--- Data for Name: Incollection; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Incollection; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -2798,7 +2786,7 @@ SELECT pg_catalog.setval('"Author_ID_seq"', 1358, true);
 --
 -- TOC entry 2139 (class 0 OID 25029)
 -- Dependencies: 186
--- Data for Name: Inproceedings; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Inproceedings; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -2806,7 +2794,7 @@ SELECT pg_catalog.setval('"Author_ID_seq"', 1358, true);
 --
 -- TOC entry 2134 (class 0 OID 24934)
 -- Dependencies: 181
--- Data for Name: InstAuthPub; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: InstAuthPub; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 INSERT INTO "InstAuthPub" VALUES (1, NULL, 'Sanjeev Saxena');
@@ -4697,7 +4685,7 @@ INSERT INTO "InstAuthPub" VALUES (1001, NULL, 'Yiwei Jiang');
 --
 -- TOC entry 2131 (class 0 OID 24905)
 -- Dependencies: 178
--- Data for Name: Institution; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Institution; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -4705,7 +4693,7 @@ INSERT INTO "InstAuthPub" VALUES (1001, NULL, 'Yiwei Jiang');
 --
 -- TOC entry 2126 (class 0 OID 24865)
 -- Dependencies: 173
--- Data for Name: Journal; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Journal; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 INSERT INTO "Journal" VALUES (1, 'Acta Inf.', '33', '7', NULL);
@@ -4765,7 +4753,7 @@ INSERT INTO "Journal" VALUES (52, 'Acta Inf.', '40', '6-7', NULL);
 --
 -- TOC entry 2157 (class 0 OID 0)
 -- Dependencies: 190
--- Name: Journal_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: Journal_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: kittn
 --
 
 SELECT pg_catalog.setval('"Journal_ID_seq"', 52, true);
@@ -4774,7 +4762,7 @@ SELECT pg_catalog.setval('"Journal_ID_seq"', 52, true);
 --
 -- TOC entry 2128 (class 0 OID 24881)
 -- Dependencies: 175
--- Data for Name: Keyword; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Keyword; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -4782,7 +4770,7 @@ SELECT pg_catalog.setval('"Journal_ID_seq"', 52, true);
 --
 -- TOC entry 2140 (class 0 OID 25043)
 -- Dependencies: 187
--- Data for Name: Proceedings; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Proceedings; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -4790,7 +4778,7 @@ SELECT pg_catalog.setval('"Journal_ID_seq"', 52, true);
 --
 -- TOC entry 2135 (class 0 OID 24954)
 -- Dependencies: 182
--- Data for Name: PubArea; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: PubArea; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -4798,7 +4786,7 @@ SELECT pg_catalog.setval('"Journal_ID_seq"', 52, true);
 --
 -- TOC entry 2136 (class 0 OID 24969)
 -- Dependencies: 183
--- Data for Name: PubKeyword; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: PubKeyword; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -4806,7 +4794,7 @@ SELECT pg_catalog.setval('"Journal_ID_seq"', 52, true);
 --
 -- TOC entry 2125 (class 0 OID 24857)
 -- Dependencies: 172
--- Data for Name: Publication; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Publication; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 INSERT INTO "Publication" VALUES (1, 'Parallel Integer Sorting and Simulation Amongst CRCW Models.', 1996, 'article');
@@ -5815,7 +5803,7 @@ INSERT INTO "Publication" VALUES (1001, 'Optimal algorithms for semi-online pree
 --
 -- TOC entry 2158 (class 0 OID 0)
 -- Dependencies: 189
--- Name: Publication_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: Publication_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: kittn
 --
 
 SELECT pg_catalog.setval('"Publication_ID_seq"', 1001, true);
@@ -5824,7 +5812,7 @@ SELECT pg_catalog.setval('"Publication_ID_seq"', 1001, true);
 --
 -- TOC entry 2137 (class 0 OID 24984)
 -- Dependencies: 184
--- Data for Name: Published; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Published; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
@@ -5832,14 +5820,14 @@ SELECT pg_catalog.setval('"Publication_ID_seq"', 1001, true);
 --
 -- TOC entry 2129 (class 0 OID 24889)
 -- Dependencies: 176
--- Data for Name: Publisher; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Publisher; Type: TABLE DATA; Schema: public; Owner: kittn
 --
 
 
 
 --
 -- TOC entry 1973 (class 2606 OID 24880)
--- Name: Area_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Area_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Area"
@@ -5848,7 +5836,7 @@ ALTER TABLE ONLY "Area"
 
 --
 -- TOC entry 2001 (class 2606 OID 25060)
--- Name: Article_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Article_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Article"
@@ -5857,7 +5845,7 @@ ALTER TABLE ONLY "Article"
 
 --
 -- TOC entry 1979 (class 2606 OID 25007)
--- Name: Author_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Author_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Author"
@@ -5866,7 +5854,7 @@ ALTER TABLE ONLY "Author"
 
 --
 -- TOC entry 1983 (class 2606 OID 24920)
--- Name: Book_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Book_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Book"
@@ -5875,7 +5863,7 @@ ALTER TABLE ONLY "Book"
 
 --
 -- TOC entry 1985 (class 2606 OID 24933)
--- Name: Conference_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Conference_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Conference"
@@ -5884,7 +5872,7 @@ ALTER TABLE ONLY "Conference"
 
 --
 -- TOC entry 1995 (class 2606 OID 25023)
--- Name: Incollection_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Incollection_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Incollection"
@@ -5893,7 +5881,7 @@ ALTER TABLE ONLY "Incollection"
 
 --
 -- TOC entry 1997 (class 2606 OID 25036)
--- Name: Inproceedings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Inproceedings_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Inproceedings"
@@ -5902,7 +5890,7 @@ ALTER TABLE ONLY "Inproceedings"
 
 --
 -- TOC entry 1987 (class 2606 OID 25078)
--- Name: InstAuthPub_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: InstAuthPub_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "InstAuthPub"
@@ -5911,7 +5899,7 @@ ALTER TABLE ONLY "InstAuthPub"
 
 --
 -- TOC entry 1981 (class 2606 OID 24912)
--- Name: Institution_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Institution_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Institution"
@@ -5920,7 +5908,7 @@ ALTER TABLE ONLY "Institution"
 
 --
 -- TOC entry 1971 (class 2606 OID 24872)
--- Name: Journal_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Journal_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Journal"
@@ -5929,7 +5917,7 @@ ALTER TABLE ONLY "Journal"
 
 --
 -- TOC entry 1975 (class 2606 OID 24888)
--- Name: Keyword_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Keyword_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Keyword"
@@ -5938,7 +5926,7 @@ ALTER TABLE ONLY "Keyword"
 
 --
 -- TOC entry 1999 (class 2606 OID 25047)
--- Name: Proceedings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Proceedings_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Proceedings"
@@ -5947,7 +5935,7 @@ ALTER TABLE ONLY "Proceedings"
 
 --
 -- TOC entry 1989 (class 2606 OID 24958)
--- Name: PubArea_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: PubArea_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "PubArea"
@@ -5956,7 +5944,7 @@ ALTER TABLE ONLY "PubArea"
 
 --
 -- TOC entry 1991 (class 2606 OID 24973)
--- Name: PubKeyword_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: PubKeyword_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "PubKeyword"
@@ -5965,7 +5953,7 @@ ALTER TABLE ONLY "PubKeyword"
 
 --
 -- TOC entry 1969 (class 2606 OID 24864)
--- Name: Publication_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Publication_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Publication"
@@ -5974,7 +5962,7 @@ ALTER TABLE ONLY "Publication"
 
 --
 -- TOC entry 1993 (class 2606 OID 24988)
--- Name: Published_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Published_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Published"
@@ -5983,7 +5971,7 @@ ALTER TABLE ONLY "Published"
 
 --
 -- TOC entry 1977 (class 2606 OID 24896)
--- Name: Publisher_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: Publisher_pkey; Type: CONSTRAINT; Schema: public; Owner: kittn; Tablespace: 
 --
 
 ALTER TABLE ONLY "Publisher"
@@ -5992,7 +5980,7 @@ ALTER TABLE ONLY "Publisher"
 
 --
 -- TOC entry 2015 (class 2606 OID 25061)
--- Name: Article_JournalID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Article_JournalID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Article"
@@ -6001,7 +5989,7 @@ ALTER TABLE ONLY "Article"
 
 --
 -- TOC entry 2002 (class 2606 OID 24921)
--- Name: Book_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Book_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Book"
@@ -6010,7 +5998,7 @@ ALTER TABLE ONLY "Book"
 
 --
 -- TOC entry 2012 (class 2606 OID 25024)
--- Name: Incollection_Crossref_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Incollection_Crossref_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Incollection"
@@ -6019,7 +6007,7 @@ ALTER TABLE ONLY "Incollection"
 
 --
 -- TOC entry 2013 (class 2606 OID 25037)
--- Name: Inproceedings_Crossref_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Inproceedings_Crossref_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Inproceedings"
@@ -6028,7 +6016,7 @@ ALTER TABLE ONLY "Inproceedings"
 
 --
 -- TOC entry 2005 (class 2606 OID 25011)
--- Name: InstAuthPub_Author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: InstAuthPub_Author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "InstAuthPub"
@@ -6037,7 +6025,7 @@ ALTER TABLE ONLY "InstAuthPub"
 
 --
 -- TOC entry 2004 (class 2606 OID 24949)
--- Name: InstAuthPub_InstID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: InstAuthPub_InstID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "InstAuthPub"
@@ -6046,7 +6034,7 @@ ALTER TABLE ONLY "InstAuthPub"
 
 --
 -- TOC entry 2003 (class 2606 OID 24944)
--- Name: InstAuthPub_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: InstAuthPub_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "InstAuthPub"
@@ -6055,7 +6043,7 @@ ALTER TABLE ONLY "InstAuthPub"
 
 --
 -- TOC entry 2014 (class 2606 OID 25048)
--- Name: Proceedings_ConferenceID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Proceedings_ConferenceID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Proceedings"
@@ -6064,7 +6052,7 @@ ALTER TABLE ONLY "Proceedings"
 
 --
 -- TOC entry 2006 (class 2606 OID 24959)
--- Name: PubArea_AreaID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: PubArea_AreaID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "PubArea"
@@ -6073,7 +6061,7 @@ ALTER TABLE ONLY "PubArea"
 
 --
 -- TOC entry 2007 (class 2606 OID 24964)
--- Name: PubArea_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: PubArea_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "PubArea"
@@ -6082,7 +6070,7 @@ ALTER TABLE ONLY "PubArea"
 
 --
 -- TOC entry 2009 (class 2606 OID 24979)
--- Name: PubKeyword_KeywordID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: PubKeyword_KeywordID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "PubKeyword"
@@ -6091,7 +6079,7 @@ ALTER TABLE ONLY "PubKeyword"
 
 --
 -- TOC entry 2008 (class 2606 OID 24974)
--- Name: PubKeyword_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: PubKeyword_PubID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "PubKeyword"
@@ -6100,7 +6088,7 @@ ALTER TABLE ONLY "PubKeyword"
 
 --
 -- TOC entry 2010 (class 2606 OID 24989)
--- Name: Published_PublicationID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Published_PublicationID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Published"
@@ -6109,7 +6097,7 @@ ALTER TABLE ONLY "Published"
 
 --
 -- TOC entry 2011 (class 2606 OID 24994)
--- Name: Published_PublisherID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Published_PublisherID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kittn
 --
 
 ALTER TABLE ONLY "Published"
@@ -6119,18 +6107,18 @@ ALTER TABLE ONLY "Published"
 --
 -- TOC entry 2151 (class 0 OID 0)
 -- Dependencies: 5
--- Name: public; Type: ACL; Schema: -; Owner: postgres
+-- Name: public; Type: ACL; Schema: -; Owner: kittn
 --
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
+REVOKE ALL ON SCHEMA public FROM kittn;
+GRANT ALL ON SCHEMA public TO kittn;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
 -- Completed on 2015-10-27 21:16:14
 
 --
--- PostgreSQL database dump complete
+-- kittnQL database dump complete
 --
 

@@ -4,5 +4,7 @@ head
     body
         div
             h1 Welcome to our site. Search data in the box below to find publications
-        dev
-            input(type="text", name="search")
+
+        form#searchingForm(name="searchingForm", action="/search", method="post")
+            input#searchFor(name="searchFor", type="text", placeholder="Search here...")
+            input(type="submit", value="Search")

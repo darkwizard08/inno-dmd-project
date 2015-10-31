@@ -37,4 +37,9 @@ public class Article {
 	public void setPages(String pages) {
 		this.pages = pages;
 	}
+
+	@Override
+	public String toString() {
+		return "[" + pubID + "; " + "JID: " + journalID + "; pg: " + pages + "]";
+	}
 }

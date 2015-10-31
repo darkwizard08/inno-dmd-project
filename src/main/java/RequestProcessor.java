@@ -1,5 +1,12 @@
-import java.util.HashMap;
+import com.google.gson.Gson;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+import db.CollectionRetriever;
+import model.Article;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
@@ -31,6 +38,26 @@ public class RequestProcessor {
 
 		Spark.halt(401, "Access denied!");
 		return "";
+	}
+
+	public ModelAndView search(Request r, Response res) {
+		Gson g = new Gson();
+		String searchFor = r.queryParams("searchFor");
+		System.out.println(searchFor);
+		HashMap<String, Object> mapping = new HashMap<>();
+
+		/* List<Object> articles = Arrays.asList(
+				CollectionRetriever.getInstance()
+				.getCollection(Article.class, searchFor)
+				.stream()
+				.map(g::toJson)
+				.toArray()
+		);*/
+
+		List<Object> articles = CollectionRetriever.getInstance().getCollection(Article.class, searchFor);
+		mapping.put("articles", articles);
+
+		return new ModelAndView(mapping, "searchresult");
 	}
 
 	public ModelAndView index(Request r, Response response) {

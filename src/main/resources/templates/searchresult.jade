@@ -1,7 +1,16 @@
 doctype html
+html(lang="en")
 head
-    title Best DMD team ever project - index, search results
-    body
-        ol#articles
-            for art in articles
-                li #{art.pubID}; #{art.journalID}; #{art.pages}
+    title Best DMD team ever project - index, main page
+    link(href="/bootstrap.min.css", rel="stylesheet")
+    link(href="/search_res.css", rel="stylesheet")
+body
+    .container
+        form.form-searching(name="searchingForm", action="/search", method="post")
+            input#searchFor.form-control(type="text", name = "searchFor", placeholder = "search...", required, autofocus)
+            form.form-results()
+                h2.form-results-heading Results for your query:
+                ol#articles
+                    for art in articles
+                        form.form-result()
+                        li #{art.pubID}; #{art.journalID}; #{art.pages}

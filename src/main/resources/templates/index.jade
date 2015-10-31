@@ -1,10 +1,11 @@
 doctype html
+html(lang="en")
 head
     title Best DMD team ever project - index, main page
-    body
-        div
-            h1 Welcome to our site. Search data in the box below to find publications
-
-        form#searchingForm(name="searchingForm", action="/search", method="post")
-            input#searchFor(name="searchFor", type="text", placeholder="Search here...")
-            input(type="submit", value="Search")
+    link(href="/bootstrap.min.css", rel="stylesheet")
+    link(href="/searching.css", rel="stylesheet")
+body
+    .container
+        form.form-searching(name="searchingForm", action="/search", method="post")
+            h2.form-searching-heading Welcome to our site. Search data in the box below to find publications
+            input#searchFor.form-control(type="text", name = "searchFor", placeholder = "search...", required, autofocus)

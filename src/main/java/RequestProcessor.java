@@ -94,7 +94,7 @@ public class RequestProcessor {
 
 		HashMap<String, Object> mapping = new HashMap<>();
 		if (lastResponse.size() != 0)
-			mapping.put("results", lastResponse.subList(lastPage * 100, (lastPage + 1) * 100 < lastResponse.size() ? (lastPage + 1) * 100 : lastResponse.size() - 1));
+			mapping.put("results", lastResponse);
 		else mapping.put("results", emptyMapForRenderingNothing);
 
 		mapping.put("pageNum", lastPage);

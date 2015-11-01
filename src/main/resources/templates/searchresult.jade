@@ -17,19 +17,14 @@ body
                 option(value="keyword") Keywords
                 option(value="pubType") Type of the publication
 
+
             div.form-results()
-                h1 Results for your query:
-
-                if pageNum + 1 <= pagesTotal
-                    form(name="searchForm", method="post", action="/search/page/#{pageNum + 1}")
-                        input(type="hidden", name="pageNum", value="#{pageNum + 1}")
-                        a(href="javascript:;", onclick="parentNode.submit();") >>
-
                 ol#articles
-                    each res in results
-                        form.form-result()
-                        li #{res.ID}; #{res.title}; #{res.year}; #{res.type}
-                    else
-                        li No results :(
+                    form.form-result(method="post", action="/publication/#{pubID}")
+                        each res in results
+                            input(name="pubID", type="hidden", value="#{res.ID}")
+                            a(href="/publication/#{res.ID}", onclick="parentNode.submit();") #{res.ID}; #{res.title}; #{res.year}; #{res.type}
+                            br
+                        else
+                            li No results :(
 
-                h2 Page #{pageNum + 1} of #{pagesTotal + 1}

@@ -11,6 +11,6 @@ body
             form.form-results()
                 h2.form-results-heading Results for your query:
                 ol#articles
-                    for art in articles
+                    for res in results
                         form.form-result()
-                        li #{art.pubID}; #{art.journalID}; #{art.pages}
+                        li #{res.ID}; #{res.title}; #{res.year}; #{res.type}

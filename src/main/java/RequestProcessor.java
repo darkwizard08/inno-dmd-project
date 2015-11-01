@@ -28,10 +28,8 @@ public class RequestProcessor {
 	}
 
 	public String authorize(Request r, Response response) {
-		System.out.println(r.body());
-		String[] args = r.body().split("&");
-		String username = args[0].split("=")[1];
-		String password = args[1].split("=")[1];
+		String username = r.queryParams("username");
+		String password = r.queryParams("password");
 
 		if ("admin".compareTo(username) == 0 && "admin".compareTo(password) == 0)
 			response.redirect("/index");
@@ -41,21 +39,34 @@ public class RequestProcessor {
 	}
 
 	public ModelAndView search(Request r, Response res) {
-		Gson g = new Gson();
 		String searchFor = r.queryParams("searchFor");
-		System.out.println(searchFor);
+		String searchType = r.queryParams("searchType");
+
+		System.out.println(searchType);
 		HashMap<String, Object> mapping = new HashMap<>();
 
-		/* List<Object> articles = Arrays.asList(
-				CollectionRetriever.getInstance()
-				.getCollection(Article.class, searchFor)
-				.stream()
-				.map(g::toJson)
-				.toArray()
-		);*/
-
-		List<Object> articles = CollectionRetriever.getInstance().getCollection(Article.class, searchFor);
-		mapping.put("articles", articles);
+		switch (searchType) {
+			case "researchArea":
+				mapping.put("results", CollectionRetriever.getInstance().getPubsOnResearchArea(searchFor));
+				break;
+			case "authorName":
+				mapping.put("results", CollectionRetriever.getInstance().getPubsOnAuthorName(searchFor));
+				break;
+			case "pubYear":
+				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnYear(searchFor));
+				break;
+			case "pubTitle":
+				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnTitle(searchFor));
+				break;
+			case "keyword":
+				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnKeyword(searchFor));
+				break;
+			case "pubType":
+				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnType(searchFor));
+				break;
+			default:
+				System.out.println("Unknown case :(");
+		}
 
 		return new ModelAndView(mapping, "searchresult");
 	}

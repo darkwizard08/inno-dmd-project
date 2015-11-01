@@ -10,9 +10,9 @@ body
         form#loginForm.form-signin(action="/authorize", method="post")
             h2.form-signin-heading Please sign in
             label(for="inputLogin", class="sr-only") Login
-            input#inputLogin.form-control(type="text", placeholder="login", required, autofocus)
+            input#inputLogin.form-control(name="username", type="text", placeholder="login", required, autofocus)
             label.sr-only(for="inputPassword") Password
-            input#inputPassword.form-control(type="password", placeholder="Password", required)
+            input#inputPassword.form-control(name="password", type="password", placeholder="Password", required)
             .checkbox
                 label
                 input(type="checkbox", value="remember-me") Remember me

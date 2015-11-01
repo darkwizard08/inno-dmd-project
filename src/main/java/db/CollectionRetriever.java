@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import model.InstAuthPub;
+import model.Publication;
+
 /**
  * @author darkwizard
  */
@@ -28,6 +31,170 @@ public class CollectionRetriever {
 		if (retr == null)
 			retr = new CollectionRetriever();
 		return retr;
+	}
+
+	public List<Object> getPubsOnResearchArea(String resArea) {
+		String sqlQuery = "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Area\", \n" +
+				"  public.\"PubArea\", \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE \n" +
+				"  \"Area\".\"ID\" = \"PubArea\".\"AreaID\" AND\n" +
+				"  \"PubArea\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
+				"  \"Area\".\"Name\" like '%"+ resArea + "%';";
+
+		ResultSet result = conn.getRawQueryResult(sqlQuery);
+		return this.processResult(result, Publication.class);
+	}
+
+	/* template
+	public List<Object> getPublicationsOn...(String searchFor) {
+		String query = ...;
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+	 */
+
+	public List<Object> getPublicationsOnYear(String searchFor) {
+		String query = "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE \n" +
+				"  \"Publication\".\"Year\" = " + searchFor + ";";
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public List<Object> getPublicationsOnVenueName(String searchFor) {
+		String query = "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE\n" +
+				"  \"Publication\".\"ID\" IN (\n" +
+				"  SELECT \n" +
+				"    \"Article\".\"PubID\"\n" +
+				"  FROM  \n" +
+				"    public.\"Article\"\n" +
+				"  WHERE \n" +
+				"    \"Article\".\"JournalID\" IN (SELECT \"Journal\".\"ID\" from public.\"Journal\" where \"Journal\".\"Title\" = '" + searchFor + "')\n" +
+				"\n" +
+				"  UNION\n" +
+				"\n" +
+				"  SELECT \n" +
+				"    \"Proceedings\".*\n" +
+				"  FROM  \n" +
+				"    public.\"Proceedings\"\n" +
+				"  WHERE \n" +
+				"    \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" = '" + searchFor + "')\n" +
+				"\n" +
+				"  UNION\n" +
+				"\n" +
+				"  SELECT \n" +
+				"    \"Inproceedings\".*\n" +
+				"  FROM  \n" +
+				"    public.\"Inproceedings\"\n" +
+				"  WHERE \n" +
+				"    \"Inproceedings\".\"Crossref\" IN (\n" +
+				"    SELECT \n" +
+				"      \"Proceedings\".\"PubID\"\n" +
+				"    FROM  \n" +
+				"      public.\"Proceedings\"\n" +
+				"    WHERE \n" +
+				"      \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" = '" + searchFor + "')));\n" +
+				"\n" +
+				"\n";
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public List<Object> getPublicationsOnTitle(String searchFor) {
+		String query = "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE \n" +
+				"  \"Publication\".\"Title\" like '%" + searchFor + "%';\n";
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public List<Object> getPublicationsOnKeyword(String searchFor) {
+		String query = "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Keyword\", \n" +
+				"  public.\"PubKeyword\", \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE \n" +
+				"  \"Keyword\".\"ID\" = \"PubKeyword\".\"AreaID\" AND\n" +
+				"  \"PubKeyword\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
+				"  \"Keyword\".\"Word\" like '%" + searchFor + "%';\n";
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public List<Object> getPublicationsOnType(String searchFor) {
+		String query = "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE \n" +
+				"  \"Publication\".\"Type\" = '" + searchFor + "';";
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public List<Object> getPublicationsOnInstitution(String searchFor) {
+		String query = "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Publication\", \n" +
+				"  public.\"InstAuthPub\", \n" +
+				"  public.\"Institution\"\n" +
+				"WHERE \n" +
+				"  \"InstAuthPub\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
+				"  \"InstAuthPub\".\"InstID\" = \"Institution\".\"ID\" AND\n" +
+				"  \"Institution\".\"Title\" like '%" + searchFor + "%';";
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public List<Object> getPubsOnAuthorName(String authorName) {
+		String query = "SELECT \n" +
+				" \"Publication\".*\n" +
+				"FROM \n" +
+				" public.\"InstAuthPub\", \n" +
+				" public.\"Publication\"\n" +
+				"WHERE \n" +
+				" \"Publication\".\"ID\" = \"InstAuthPub\".\"PubID\" AND\n" +
+				" \"InstAuthPub\".\"Author\" IN (\n" +
+				"   select \"Author\".\"Name\" \n" +
+				"   from public.\"Author\" \n" +
+				"   where \"Author\".\"ID\" in (\n" +
+				"     select \"Author\".\"ID\"\n" +
+				"     from public.\"Author\"\n" +
+				"     where \"Author\".\"Name\" like '%" + authorName + "%'));";
+
+		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public List<Object> processResult(ResultSet result, Class collectionOf) {
+		List<Object> answer = new LinkedList<>();
+
+		try {
+			while (result.next()) {
+				Constructor c = collectionOf.getDeclaredConstructors()[0];
+				Object[] array = new Object[c.getParameterCount()];
+				for (int i = 0; i < c.getParameterCount(); ++i)
+					array[i] = ("" + c.getParameterTypes()[i].getSimpleName()).compareTo("int") == 0
+							? result.getInt(i + 1) : result.getString(i + 1);
+				Object instance = c.newInstance(array);
+
+				answer.add(instance);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return answer;
 	}
 
 	public List<Object> getCollection(Class<?> collectionOf, String searchFor) {
@@ -54,24 +221,6 @@ public class CollectionRetriever {
 		sqlQuery += attributesComparison;
 		ResultSet result = conn.getRawQueryResult(sqlQuery);
 
-		List<Object> answer = new LinkedList<>();
-
-		try {
-			while (result.next()) {
-				Constructor c = collectionOf.getDeclaredConstructors()[0];
-				Object[] array = new Object[c.getParameterCount()];
-				for (int i = 0; i < c.getParameterCount(); ++i)
-					array[i] = ("" + c.getParameterTypes()[i].getSimpleName()).compareTo("int") == 0
-							? result.getInt(i + 1) : result.getString(i + 1);
-				Object instance = c.newInstance(array);
-
-				answer.add(instance);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return answer;
+		return this.processResult(result, collectionOf);
 	}
 }

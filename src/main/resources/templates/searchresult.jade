@@ -8,7 +8,15 @@ body
     .container
         form.form-searching(name="searchingForm", action="/search", method="post")
             input#searchFor.form-control(type="text", name = "searchFor", placeholder = "search...", required, autofocus)
-            form.form-results()
+            select(name="searchType")
+                option(value="researchArea") Research area
+                option(value="authorName") Author name
+                option(value="pubYear") Year of the publication
+                option(value="pubTitle") Title of the publication
+                option(value="keyword") Keywords
+                option(value="pubType") Type of the publication
+
+            div
                 h2.form-results-heading Results for your query:
                 ol#articles
                     for res in results

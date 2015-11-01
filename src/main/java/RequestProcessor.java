@@ -7,6 +7,7 @@ import java.util.List;
 
 import db.CollectionRetriever;
 import model.Article;
+import model.FullInfo;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
@@ -72,6 +73,18 @@ public class RequestProcessor {
 		}
 
 		return displayPageWithResults(r, res);
+	}
+
+	public ModelAndView getPublication(Request req, Response res) {
+		int pubNumber = Integer.parseInt(req.params(":number"));
+		FullInfo fi = CollectionRetriever.getInstance().getFullPublicationInfo(pubNumber);
+
+		HashMap<String, Object> mapping = new HashMap<>();
+		if (fi != null)
+			mapping.put("data", fi);
+		else mapping.put("data", "haha");
+
+		return new ModelAndView(mapping, "page");
 	}
 
 	public ModelAndView displayPageWithResults(Request r, Response resp) {

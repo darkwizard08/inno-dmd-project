@@ -24,6 +24,7 @@ public class Runner {
 		post("/search/page/0", proc::search, new JadeTemplateEngine());
 		post("/search/page/:number", proc::displayPageWithResults, new JadeTemplateEngine());
 		post("/authorize", proc::authorize);
+		get("/publication/:number", proc::getPublication, new JadeTemplateEngine());
 	}
 
 

@@ -12,8 +12,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import model.Area;
+import model.Article;
+import model.FullInfo;
 import model.InstAuthPub;
+import model.Journal;
+import model.Keyword;
 import model.Publication;
+import model.Publisher;
 
 /**
  * @author darkwizard
@@ -173,6 +179,68 @@ public class CollectionRetriever {
 				"     where \"Author\".\"Name\" like '%" + authorName + "%'));";
 
 		return this.processResult(conn.getRawQueryResult(query), Publication.class);
+	}
+
+	public FullInfo getFullPublicationInfo(int pubId) {
+		String query = "SELECT \n" +
+				"  \"Publication\".\"Title\", \n" +
+				"  \"Publication\".\"Year\", \n" +
+				"  \"Publication\".\"Type\", \n" +
+				"  \"Area\".\"ID\", \n" +
+				"  \"Area\".\"Name\", \n" +
+				"  \"Keyword\".\"ID\", \n" +
+				"  \"Keyword\".\"Word\", \n" +
+				"  \"Publisher\".\"ID\", \n" +
+				"  \"Publisher\".\"Name\" \n" +
+				"FROM \n" +
+				"  public.\"Publication\"\n" +
+				"    LEFT OUTER JOIN public.\"PubArea\" ON (\"PubArea\".\"PubID\" = \"Publication\".\"ID\") \n" +
+				"    LEFT OUTER JOIN public.\"PubKeyword\" ON (\"PubKeyword\".\"PubID\" = \"Publication\".\"ID\") \n" +
+				"    LEFT OUTER JOIN public.\"Area\" ON (\"PubArea\".\"AreaID\" = \"Area\".\"ID\")\n" +
+				"    LEFT OUTER JOIN public.\"Keyword\" ON (\"PubKeyword\".\"KeywordID\" = \"Keyword\".\"ID\")\n" +
+				"    LEFT OUTER JOIN public.\"Published\" ON (\"Published\".\"PublicationID\" = \"Publication\".\"ID\")\n" +
+				"    LEFT OUTER JOIN public.\"Publisher\" ON (\"Published\".\"PublisherID\" = \"Publisher\".\"ID\")\n" +
+				"WHERE \n" +
+				"  \"Publication\".\"ID\" = " + pubId + ";";
+
+		ResultSet rs = conn.getRawQueryResult(query);
+		try {
+			while (rs.next()) {
+				Publication publication = new Publication(pubId, rs.getString(1), rs.getInt(2), rs.getString(3));
+				Area a = new Area(rs.getInt(4), rs.getString(5));
+				Keyword keyword = new Keyword(rs.getInt(6), rs.getString(7));
+				Publisher publisher = new Publisher(rs.getInt(8), rs.getString(9));
+
+				switch (publication.getType()) {
+					case "article":
+						query = "SELECT \n" +
+								"  \"Journal\".\"ID\", \n" +
+								"  \"Journal\".\"Title\", \n" +
+								"  \"Journal\".\"Volume\", \n" +
+								"  \"Journal\".\"Number\", \n" +
+								"  \"Journal\".\"Name\", \n" +
+								"  \"Article\".\"Pages\"\n" +
+								"FROM \n" +
+								"  public.\"Article\", \n" +
+								"  public.\"Journal\"\n" +
+								"WHERE \n" +
+								"  \"Article\".\"JournalID\" = \"Journal\".\"ID\" AND\n" +
+								"  \"Article\".\"PubID\" = " + pubId + ";\n";
+
+						ResultSet rs2 = conn.getRawQueryResult(query);
+						while (rs2.next()) {
+							Journal j = new Journal(rs2.getInt(1), rs2.getString(2), rs2.getString(3), rs2.getString(4), rs2.getString(5));
+							Article art = new Article(publication, j.getJournalID(), rs2.getString(6));
+
+							return new FullInfo(art, a, keyword, publisher);
+						}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	public List<Object> processResult(ResultSet result, Class collectionOf) {

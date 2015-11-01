@@ -4,23 +4,23 @@ package model;
  * @author darkwizard
  */
 public class Publication {
-	public String ID;
+	public int ID;
 	public String title;
-	public String year;
+	public int year;
 	public String type;
 
-	public Publication(String ID, String title, String year, String type) {
+	public Publication(int ID, String title, int year, String type) {
 		this.ID = ID;
 		this.title = title;
 		this.year = year;
 		this.type = type;
 	}
 
-	public String getID() {
+	public int getID() {
 		return ID;
 	}
 
-	public void setID(String ID) {
+	public void setID(int ID) {
 		this.ID = ID;
 	}
 
@@ -32,11 +32,11 @@ public class Publication {
 		this.title = title;
 	}
 
-	public String getYear() {
+	public int getYear() {
 		return year;
 	}
 
-	public void setYear(String year) {
+	public void setYear(int year) {
 		this.year = year;
 	}
 

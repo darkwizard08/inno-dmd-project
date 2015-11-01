@@ -3,13 +3,20 @@ package model;
 /**
  * @author darkwizard
  */
-public class Article {
+public class Article extends Publication {
 	private int pubID = 0;
 	private int journalID = 0;
 	private String pages = "";
 
-	public Article(int pubID, int journalID, String pages) {
-		this.pubID = pubID;
+	public Article(int ID, String title, int year, int journalID, String pages) {
+		super(ID, title, year, "article");
+		this.pubID = ID;
+		this.journalID = journalID;
+		this.pages = pages;
+	}
+
+	public Article(Publication pub, int journalID, String pages) {
+		super(pub.getID(), pub.getTitle(), pub.getYear(), pub.getType());
 		this.journalID = journalID;
 		this.pages = pages;
 	}

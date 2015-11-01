@@ -1,0 +1,14 @@
+// Created by kittn on 11/1/15.
+doctype html
+head
+    title Hello
+    body
+        // data - map of the FullInfo
+        h2 #{data.publication.title}
+        h2 Year: #{data.publication.year}
+        h2 ID: #{data.publication.ID}
+
+        case data.publication.type
+            when "article"
+                h2 Pages: #{data.publication.pages}
+                // here will go journals because we're parsing articles

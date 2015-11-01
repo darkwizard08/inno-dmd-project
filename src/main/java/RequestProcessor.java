@@ -16,6 +16,8 @@ import spark.Spark;
  * @author darkwizard
  */
 public class RequestProcessor {
+	public List<Object> lastResponse = new ArrayList<>();
+	public int lastPage = 0;
 
 	public RequestProcessor() {
 		Spark.staticFileLocation("/public"); // Static files
@@ -39,37 +41,54 @@ public class RequestProcessor {
 	}
 
 	public ModelAndView search(Request r, Response res) {
+		System.out.println("Calling search with page 0");
+		lastPage = 0;
 		String searchFor = r.queryParams("searchFor");
 		String searchType = r.queryParams("searchType");
 
 		System.out.println(searchType);
-		HashMap<String, Object> mapping = new HashMap<>();
 
 		switch (searchType) {
 			case "researchArea":
-				mapping.put("results", CollectionRetriever.getInstance().getPubsOnResearchArea(searchFor));
+				lastResponse = CollectionRetriever.getInstance().getPubsOnResearchArea(searchFor);
 				break;
 			case "authorName":
-				mapping.put("results", CollectionRetriever.getInstance().getPubsOnAuthorName(searchFor));
+				lastResponse = CollectionRetriever.getInstance().getPubsOnAuthorName(searchFor);
 				break;
 			case "pubYear":
-				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnYear(searchFor));
+				lastResponse = CollectionRetriever.getInstance().getPublicationsOnYear(searchFor);
 				break;
 			case "pubTitle":
-				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnTitle(searchFor));
+				lastResponse =  CollectionRetriever.getInstance().getPublicationsOnTitle(searchFor);
 				break;
 			case "keyword":
-				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnKeyword(searchFor));
+				lastResponse = CollectionRetriever.getInstance().getPublicationsOnKeyword(searchFor);
 				break;
 			case "pubType":
-				mapping.put("results", CollectionRetriever.getInstance().getPublicationsOnType(searchFor));
+				lastResponse = CollectionRetriever.getInstance().getPublicationsOnType(searchFor);
 				break;
 			default:
 				System.out.println("Unknown case :(");
 		}
 
+		return displayPageWithResults(r, res);
+	}
+
+	public ModelAndView displayPageWithResults(Request r, Response resp) {
+		System.out.println("Switching page");
+		if (r.queryParams("pageNum") != null)
+			lastPage = Integer.parseInt(r.queryParams("pageNum"));
+
+		HashMap<String, Object> mapping = new HashMap<>();
+		if (lastResponse.size() != 0)
+			mapping.put("results", lastResponse.subList(lastPage * 100, (lastPage + 1) * 100 < lastResponse.size() ? (lastPage + 1) * 100 : lastResponse.size() - 1));
+		else mapping.put("results", emptyMapForRenderingNothing);
+
+		mapping.put("pageNum", lastPage);
+		mapping.put("pagesTotal", lastResponse.size() / 100);
 		return new ModelAndView(mapping, "searchresult");
 	}
+
 
 	public ModelAndView index(Request r, Response response) {
 		return new ModelAndView(emptyMapForRenderingNothing, "index");

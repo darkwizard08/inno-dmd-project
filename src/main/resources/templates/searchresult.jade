@@ -6,11 +6,19 @@ head
     link(href="/search_res.css", rel="stylesheet")
 body
     .container
-        form.form-searching(name="searchingForm", action="/search", method="post")
+        form.form-searching(name="searchingForm", action="/search/page/0", method="post")
             input#searchFor.form-control(type="text", name = "searchFor", placeholder = "search...", required, autofocus)
-            form.form-results()
-                h2.form-results-heading Results for your query:
-                ol#articles
-                    for res in results
-                        form.form-result()
-                        li #{res.ID}; #{res.title}; #{res.year}; #{res.type}
+        div.form-results()
+            h2 Page #{pageNum} of #{pagesTotal}
+            if pageNum + 1 <= pagesTotal
+                form(name="searchForm", method="post", action="/search/page/#{pageNum + 1}")
+                    input(type="hidden", name="pageNum", value="#{pageNum + 1}")
+                    a(href="javascript:;", onclick="parentNode.submit();") >>
+
+            h2.form-results-heading Results for your query:
+            ol#articles
+                each res in results
+                    form.form-result()
+                    li #{res.ID}; #{res.title}; #{res.year}; #{res.type}
+                else
+                    li No results :(

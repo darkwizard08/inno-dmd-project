@@ -6,7 +6,7 @@ head
     link(href="/searching.css", rel="stylesheet")
 body
     .container
-        form.form-searching(name="searchingForm", action="/search", method="post")
+        form.form-searching(name="searchingForm", action="/search/page/0", method="post")
             h2.form-searching-heading Welcome to our site. Search data in the box below to find publications
             input#searchFor.form-control(type="text", name = "searchFor", placeholder = "search...", required, autofocus)
             select(name="searchType")

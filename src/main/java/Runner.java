@@ -21,7 +21,8 @@ public class Runner {
 		get("/", (req, res) -> {res.redirect("/login"); return "Moving...";});
 		get("/login", proc::login, new JadeTemplateEngine());
 		get("/index", proc::index, new JadeTemplateEngine());
-		post("/search", proc::search, new JadeTemplateEngine());
+		post("/search/page/0", proc::search, new JadeTemplateEngine());
+		post("/search/page/:number", proc::displayPageWithResults, new JadeTemplateEngine());
 		post("/authorize", proc::authorize);
 	}
 

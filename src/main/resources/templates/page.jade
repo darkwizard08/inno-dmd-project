@@ -1,7 +1,7 @@
 // Created by kittn on 11/1/15.
 doctype html
 head
-    title Hello
+    title #{data.publication.title}
     body
         // data - map of the FullInfo
         h2 #{data.publication.title}
@@ -12,3 +12,11 @@ head
             when "article"
                 h2 Pages: #{data.publication.pages}
                 // here will go journals because we're parsing articles
+            when "proceedings"
+                h2
+            when "inproceedings"
+                h2
+            when "book"
+                h2
+            when "incollection"
+                h2

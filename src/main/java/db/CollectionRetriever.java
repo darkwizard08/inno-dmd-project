@@ -1,32 +1,22 @@
 package db;
 
+import model.*;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import model.Area;
-import model.Article;
-import model.FullInfo;
-import model.InstAuthPub;
-import model.Journal;
-import model.Keyword;
-import model.Publication;
-import model.Publisher;
 
 /**
  * @author darkwizard
  */
 public class CollectionRetriever {
-	private DBConnector conn = null;
 	private static CollectionRetriever retr = null;
+	private DBConnector conn = null;
 
 	private CollectionRetriever() {
 		this.conn = DBConnector.getInstance();
@@ -234,6 +224,86 @@ public class CollectionRetriever {
 
 							return new FullInfo(art, a, keyword, publisher);
 						}
+						break;
+					case "proceedings":
+						query = "SELECT \n" +
+								"  \"Conference\".\"ID\", \n" +
+								"  \"Conference\".\"Title\", \n" +
+								"  \"Conference\".\"Volume\"\n" +
+								"FROM \n" +
+								"  public.\"Proceedings\", \n" +
+								"  public.\"Conference\"\n" +
+								"WHERE \n" +
+								"  \"Proceedings\".\"ConferenceID\" = \"Conference\".\"ID\" AND\n" +
+								"  \"Proceedings\".\"PubID\" = " + pubId + ";\n";
+
+						rs2 = conn.getRawQueryResult(query);
+						while (rs2.next()) {
+							Conference j = new Conference(rs2.getInt(1), rs2.getString(2), rs2.getString(3));
+							Proceedings proc = new Proceedings(publication, j.getConferenceID());
+
+							return new FullInfo(proc, a, keyword, publisher);
+						}
+						break;
+					case "inproceedings":
+						query = "SELECT \n" +
+								"  \"Conference\".\"ID\", \n" +
+								"  \"Conference\".\"Title\", \n" +
+								"  \"Conference\".\"Volume\", \n" +
+								"  \"Inproceedings\".\"Crossref\"\n" +
+								"  \"Inproceedings\".\"Pages\", \n" +
+								"FROM \n" +
+								"  public.\"Proceedings\", \n" +
+								"  public.\"Conference\", \n" +
+								"  public.\"Inproceedings\"\n" +
+								"WHERE \n" +
+								"  \"Proceedings\".\"ConferenceID\" = \"Conference\".\"ID\" AND\n" +
+								"  \"Inproceedings\".\"Crossref\" = \"Proceedings\".\"PubID\" AND\n" +
+								"  \"Inproceedings\".\"PubID\" = " + pubId + ";";
+
+						rs2 = conn.getRawQueryResult(query);
+						while (rs2.next()) {
+							Conference j = new Conference(rs2.getInt(1), rs2.getString(2), rs2.getString(3));
+							Inproceedings inproc = new Inproceedings(publication, rs2.getInt(4), rs2.getString(5));
+
+							return new FullInfo(inproc, a, keyword, publisher);
+						}
+						break;
+					case "book":
+						query = "SELECT \n" +
+								"  \"Book\".\"Volume\"\n" +
+								"FROM \n" +
+								"  public.\"Book\"\n" +
+								"WHERE \n" +
+								"  \"Book\".\"PubID\" = " + pubId + ";";
+
+						rs2 = conn.getRawQueryResult(query);
+						while (rs2.next()) {
+							Book j = new Book(publication, rs2.getString(1));
+
+							return new FullInfo(j, a, keyword, publisher);
+						}
+						break;
+					case "incollection":
+						query = "SELECT \n" +
+								"  \"Book\".\"Volume\", \n" +
+								"  \"Incollection\".\"Crossref\"\n" +
+								"  \"Incollection\".\"Pages\", \n" +
+								"FROM \n" +
+								"  public.\"Book\", \n" +
+								"  public.\"Incollection\"\n" +
+								"WHERE \n" +
+								"  \"Incollection\".\"Crossref\" = \"Book\".\"PubID\" AND\n" +
+								"  \"Incollection\".\"PubID\" = " + pubId + ";\n";
+
+						rs2 = conn.getRawQueryResult(query);
+						while (rs2.next()) {
+							Book j = new Book(publication, rs2.getString(1));
+							Incollection incoll = new Incollection(publication, rs2.getInt(2), rs2.getString(3));
+
+							return new FullInfo(incoll, a, keyword, publisher);
+						}
+						break;
 				}
 			}
 		} catch (SQLException e) {

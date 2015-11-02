@@ -7,16 +7,24 @@ head
         h2 #{data.publication.title}
         h2 Year: #{data.publication.year}
         h2 ID: #{data.publication.ID}
+        if data.publisher.Name != null
+            h2 Publisher: #{data.publisher.Name}
+        if data.area.name != null
+            h2 Area: #{data.area.name}
+        if data.word.word != null
+            h2 Keyword: #{data.word.word}
 
         case data.publication.type
             when "article"
                 h2 Pages: #{data.publication.pages}
-                // here will go journals because we're parsing articles
+
+                h1 Journal
             when "proceedings"
                 h2
             when "inproceedings"
-                h2
+                h2 Pages: #{data.publication.pages}
             when "book"
-                h2
+                if data.publication.volume != null
+                    h2 Volume: #{data.publication.volume}
             when "incollection"
-                h2
+                h2 Pages: #{data.publication.pages}

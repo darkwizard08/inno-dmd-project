@@ -287,8 +287,8 @@ public class CollectionRetriever {
 					case "incollection":
 						query = "SELECT \n" +
 								"  \"Book\".\"Volume\", \n" +
-								"  \"Incollection\".\"Crossref\"\n" +
-								"  \"Incollection\".\"Pages\", \n" +
+								"  \"Incollection\".\"Crossref\", \n" +
+								"  \"Incollection\".\"Pages\" \n" +
 								"FROM \n" +
 								"  public.\"Book\", \n" +
 								"  public.\"Incollection\"\n" +

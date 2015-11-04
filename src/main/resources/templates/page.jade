@@ -19,10 +19,22 @@ head
                 h2 Pages: #{data.publication.pages}
 
                 h1 Journal
+                h2 #{data.addition.title}
+                if data.addition.volume != null
+                    h2 Volume: #{data.addition.volume}
+                if data.addition.number != null
+                    h2 Number: #{data.addition.number}
             when "proceedings"
-                h2
+                h1 Conference
+                h2 #{data.addition.title}
+                if data.addition.volume != null
+                    h2 Volume: #{data.addition.volume}
             when "inproceedings"
                 h2 Pages: #{data.publication.pages}
+                h1 Conference
+                h2 #{data.addition.title}
+                if data.addition.volume != null
+                    h2 Volume: #{data.addition.volume}
             when "book"
                 if data.publication.volume != null
                     h2 Volume: #{data.publication.volume}

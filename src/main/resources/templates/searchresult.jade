@@ -6,7 +6,7 @@ head
     link(href="/search_res.css", rel="stylesheet")
 body
     .container
-        form.form-searching(name="searchingForm", action="/search/page/0", method="post")
+        form.form-searching(name="searchingForm", action="/search/page/1", method="post")
             input#searchFor.form-control(type="text", name = "searchFor", placeholder = "search...", required, autofocus)
 
             select(name="searchType")
@@ -21,10 +21,16 @@ body
             div.form-results()
                 ol#articles
                     form.form-result(method="post", action="/publication/#{pubID}")
+                        h2 Results for your query:
                         each res in results
                             input(name="pubID", type="hidden", value="#{res.ID}")
-                            a(href="/publication/#{res.ID}", onclick="parentNode.submit();") #{res.ID}; #{res.title}; #{res.year}; #{res.type}
+                            a(href="/publication/#{res.ID}", onclick="parentNode.submit();") #{res.title}
                             br
+                            p ID: #{res.ID} Year: #{res.year} Type: #{res.type}
                         else
-                            li No results :(
-
+                            p No results :(
+                        if pagesTotal
+                            p Page #{pageNum} of #{pagesTotal}
+                        if pageNum < pagesTotal
+                            input(type="hidden", name="pageNum", value="#{pageNum + 1}")
+                            a(href="/search/page/#{pageNum + 1}", onclick="parentNode.submit();") >>

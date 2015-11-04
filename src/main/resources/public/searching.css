@@ -5,7 +5,7 @@ body {
 }
 
 .form-searching {
-    max-width: 630px;
+    max-width: available;
     padding: 15px;
     margin: 0 auto;
 }

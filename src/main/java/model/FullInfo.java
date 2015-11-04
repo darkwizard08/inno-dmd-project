@@ -1,5 +1,7 @@
 package model;
 
+import java.util.List;
+
 /**
  * @author darkwizard
  */
@@ -9,6 +11,7 @@ public class FullInfo {
 	public Keyword word;
 	public Publisher publisher;
 	public Object addition;
+	public List<Author> authors;
 
 	public FullInfo(Publication publication, Area area, Keyword word, Publisher publisher) {
 		this.publication = publication;

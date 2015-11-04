@@ -218,11 +218,13 @@ public class CollectionRetriever {
 								"  \"Article\".\"PubID\" = " + pubId + ";\n";
 
 						ResultSet rs2 = conn.getRawQueryResult(query);
+						FullInfo result;
 						while (rs2.next()) {
 							Journal j = new Journal(rs2.getInt(1), rs2.getString(2), rs2.getString(3), rs2.getString(4), rs2.getString(5));
 							Article art = new Article(publication, j.getJournalID(), rs2.getString(6));
-
-							return new FullInfo(art, a, keyword, publisher);
+							result = new FullInfo(art, a, keyword, publisher);
+							result.setAddition(j);
+							return result;
 						}
 						break;
 					case "proceedings":
@@ -241,8 +243,9 @@ public class CollectionRetriever {
 						while (rs2.next()) {
 							Conference j = new Conference(rs2.getInt(1), rs2.getString(2), rs2.getString(3));
 							Proceedings proc = new Proceedings(publication, j.getConferenceID());
-
-							return new FullInfo(proc, a, keyword, publisher);
+							result = new FullInfo(proc, a, keyword, publisher);
+							result.setAddition(j);
+							return result;
 						}
 						break;
 					case "inproceedings":
@@ -265,8 +268,9 @@ public class CollectionRetriever {
 						while (rs2.next()) {
 							Conference j = new Conference(rs2.getInt(1), rs2.getString(2), rs2.getString(3));
 							Inproceedings inproc = new Inproceedings(publication, rs2.getInt(4), rs2.getString(5));
-
-							return new FullInfo(inproc, a, keyword, publisher);
+							result = new FullInfo(inproc, a, keyword, publisher);
+							result.setAddition(j);
+							return result;
 						}
 						break;
 					case "book":
@@ -300,8 +304,9 @@ public class CollectionRetriever {
 						while (rs2.next()) {
 							Book j = new Book(publication, rs2.getString(1));
 							Incollection incoll = new Incollection(publication, rs2.getInt(2), rs2.getString(3));
-
-							return new FullInfo(incoll, a, keyword, publisher);
+							result = new FullInfo(incoll, a, keyword, publisher);
+							result.setAddition(j);
+							return result;
 						}
 						break;
 				}

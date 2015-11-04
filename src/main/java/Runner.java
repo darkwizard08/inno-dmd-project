@@ -2,13 +2,10 @@
  * @author darkwizard
  */
 
-import java.util.List;
-
-import db.CollectionRetriever;
-import model.Article;
 import spark.template.jade.JadeTemplateEngine;
 
-import static spark.Spark.*;
+import static spark.Spark.get;
+import static spark.Spark.post;
 
 public class Runner {
 	public static void main(String[] args) {
@@ -21,10 +18,9 @@ public class Runner {
 		get("/", (req, res) -> {res.redirect("/login"); return "Moving...";});
 		get("/login", proc::login, new JadeTemplateEngine());
 		get("/index", proc::index, new JadeTemplateEngine());
-		post("/search/page/0", proc::search, new JadeTemplateEngine());
-		post("/search/page/:number", proc::displayPageWithResults, new JadeTemplateEngine());
+		post("/search/page/1", proc::search, new JadeTemplateEngine());
+		get("/search/page/:number", proc::displayPageWithResults, new JadeTemplateEngine());
 		post("/authorize", proc::authorize);
-		//get("/search/page/:number", proc::displayPageWithResults, new JadeTemplateEngine());
 		get("/publication/:number", proc::getPublication, new JadeTemplateEngine());
 	}
 

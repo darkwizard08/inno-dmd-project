@@ -1,17 +1,13 @@
-import com.google.gson.Gson;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
 import db.CollectionRetriever;
-import model.Article;
 import model.FullInfo;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author darkwizard
@@ -19,12 +15,11 @@ import spark.Spark;
 public class RequestProcessor {
 	public List<Object> lastResponse = new ArrayList<>();
 	public int lastPage = 0;
+	public HashMap<String, String> emptyMapForRenderingNothing = new HashMap<>();
 
 	public RequestProcessor() {
 		Spark.staticFileLocation("/public"); // Static files
 	}
-
-	public HashMap<String, String> emptyMapForRenderingNothing = new HashMap<>();
 
 	public ModelAndView login(Request r, Response response) {
 		return new ModelAndView(emptyMapForRenderingNothing, "login");
@@ -42,8 +37,8 @@ public class RequestProcessor {
 	}
 
 	public ModelAndView search(Request r, Response res) {
-		System.out.println("Calling search with page 0");
-		lastPage = 0;
+		System.out.println("Calling search with page 1");
+		lastPage = 1;
 		String searchFor = r.queryParams("searchFor");
 		String searchType = r.queryParams("searchType");
 
@@ -88,17 +83,21 @@ public class RequestProcessor {
 	}
 
 	public ModelAndView displayPageWithResults(Request r, Response resp) {
+		final int resultSize = 50;
 		System.out.println("Switching page");
-		if (r.queryParams("pageNum") != null)
-			lastPage = Integer.parseInt(r.queryParams("pageNum"));
+		if (r.params(":number") != null)
+			lastPage = Integer.parseInt(r.params(":number"));
 
 		HashMap<String, Object> mapping = new HashMap<>();
 		if (lastResponse.size() != 0)
-			mapping.put("results", lastResponse);
+			mapping.put("results", lastResponse.subList((lastPage - 1) * resultSize,
+					lastPage * resultSize < lastResponse.size() ?
+							lastPage * resultSize : lastResponse.size() - 1));
 		else mapping.put("results", emptyMapForRenderingNothing);
 
 		mapping.put("pageNum", lastPage);
-		mapping.put("pagesTotal", lastResponse.size() / 100);
+		mapping.put("pagesTotal", lastResponse.size() / resultSize +
+				(lastResponse.size() % resultSize != 0 ? 1 : 0));
 		return new ModelAndView(mapping, "searchresult");
 	}
 

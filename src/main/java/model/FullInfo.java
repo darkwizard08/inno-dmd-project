@@ -11,7 +11,7 @@ public class FullInfo {
 	public Keyword word;
 	public Publisher publisher;
 	public Object addition;
-	public List<Author> authors;
+	public List<Object> authors;
 
 	public FullInfo(Publication publication, Area area, Keyword word, Publisher publisher) {
 		this.publication = publication;
@@ -26,5 +26,13 @@ public class FullInfo {
 
 	public void setAddition(Object addition) {
 		this.addition = addition;
+	}
+
+	public List<Object> getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(List<Object> authors) {
+		this.authors = authors;
 	}
 }

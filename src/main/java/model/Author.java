@@ -1,12 +1,15 @@
 package model;
 
-/**
- * Created by lebdron on 02.11.2015.
- */
 public class Author {
     public int ID;
     public String name;
     public Institution institution;
+
+    public Author(int ID, String name, int instID, String instTitle) {
+        this.ID = ID;
+        this.name = name;
+        institution = new Institution(instID, instTitle);
+    }
 
     public Author(int ID, String name) {
         this.ID = ID;

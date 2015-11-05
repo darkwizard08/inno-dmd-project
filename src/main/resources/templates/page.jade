@@ -6,7 +6,6 @@ head
         // data - map of the FullInfo
         h2 #{data.publication.title}
         h2 Year: #{data.publication.year}
-        h2 ID: #{data.publication.ID}
         if data.publisher.Name != null
             h2 Publisher: #{data.publisher.Name}
         if data.area.name != null
@@ -17,7 +16,6 @@ head
         case data.publication.type
             when "article"
                 h2 Pages: #{data.publication.pages}
-
                 h1 Journal
                 h2 #{data.addition.title}
                 if data.addition.volume != null
@@ -40,3 +38,18 @@ head
                     h2 Volume: #{data.publication.volume}
             when "incollection"
                 h2 Pages: #{data.publication.pages}
+                h1 Book
+                h2 #{data.addition.title}
+                if data.addition.volume != null
+                    h2 Volume: #{data.addition.volume}
+
+        h1 Authors
+        each auth in data.authors
+            h2 #{auth.name}
+            if auth.institution.title
+                h3 #{auth.institution.title}
+
+        a(href="/search?type=references&query=#{data.publication.ID}") Get references
+        br
+        a(href="/search?type=citedBy&query=#{data.publication.ID}") Get cited by
+        br

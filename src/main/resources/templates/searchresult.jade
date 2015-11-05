@@ -6,10 +6,10 @@ head
     link(href="/search_res.css", rel="stylesheet")
 body
     .container
-        form.form-searching(name="searchingForm", action="/search/page/1", method="post")
-            input#searchFor.form-control(type="text", name = "searchFor", placeholder = "search...", required, autofocus)
+        form.form-searching(name="searchingForm", action="/search", method="get")
+            input#searchFor.form-control(type="text", name = "query", placeholder = "search...", required, autofocus)
 
-            select(name="searchType")
+            select(name="type")
                 option(value="researchArea") Research area
                 option(value="authorName") Author name
                 option(value="pubYear") Year of the publication
@@ -17,20 +17,24 @@ body
                 option(value="keyword") Keywords
                 option(value="pubType") Type of the publication
 
-
-            div.form-results()
-                ol#articles
-                    form.form-result(method="post", action="/publication/#{pubID}")
-                        h2 Results for your query:
-                        each res in results
-                            input(name="pubID", type="hidden", value="#{res.ID}")
-                            a(href="/publication/#{res.ID}", onclick="parentNode.submit();") #{res.title}
-                            br
-                            p ID: #{res.ID} Year: #{res.year} Type: #{res.type}
-                        else
-                            p No results :(
-                        if pagesTotal
-                            p Page #{pageNum} of #{pagesTotal}
-                        if pageNum < pagesTotal
-                            input(type="hidden", name="pageNum", value="#{pageNum + 1}")
-                            a(href="/search/page/#{pageNum + 1}", onclick="parentNode.submit();") >>
+        div.form-results()
+            ol#articles
+                if results
+                    h4 Found #{results[0].count} results
+                    if (offset - 50) >= 0
+                        a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}") [Previous #{50} results]
+                    else
+                    [Previous #{50} results]
+&#160;
+    if (offset + 50) < results[0].count
+        a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}") [Next #{50} results]
+    else
+[Next #{50} results]
+    br
+    hr
+    each res in results
+        a(href="/publication/#{res.ID}") #{res.title}
+        br
+        p Year: #{res.year} Type: #{res.type}
+else
+p No results :(

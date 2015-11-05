@@ -24,17 +24,17 @@ body
                     if (offset - 50) >= 0
                         a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}") [Previous #{50} results]
                     else
-                    [Previous #{50} results]
-&#160;
-    if (offset + 50) < results[0].count
-        a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}") [Next #{50} results]
-    else
-[Next #{50} results]
-    br
-    hr
-    each res in results
-        a(href="/publication/#{res.ID}") #{res.title}
-        br
-        p Year: #{res.year} Type: #{res.type}
-else
-p No results :(
+                        | [Previous #{50} results]
+                    | &#160;
+                    if (offset + 50) < results[0].count
+                        a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}") [Next #{50} results]
+                    else
+                        | [Next #{50} results]
+                    br
+                    hr
+                    each res in results
+                        a(href="/publication/#{res.ID}") #{res.title}
+                        br
+                        p Year: #{res.year} Type: #{res.type}
+                else
+                    p No results :(

@@ -44,6 +44,19 @@ public class RequestProcessor {
 		return new ModelAndView(mapping, "page");
 	}
 
+	public ModelAndView getPublicationForUpdate(Request req, Response res) {
+		int pubNumber = Integer.parseInt(req.params(":number"));
+		FullInfo fi = CollectionRetriever.getInstance().getFullPublicationInfo(pubNumber);
+
+		HashMap<String, Object> mapping = new HashMap<>();
+		if (fi != null) {
+			mapping.put("data", fi);
+		}
+		else mapping.put("data", "haha");
+
+		return new ModelAndView(mapping, "update");
+	}
+
 	public ModelAndView search(Request req, Response res) {
 		String searchFor = req.queryParams("query");
 		String searchType = req.queryParams("type");
@@ -56,6 +69,10 @@ public class RequestProcessor {
 		mapping.put("type", searchType);
 
 		return new ModelAndView(mapping, "searchresult");
+	}
+
+	public ModelAndView addPublication(Request rq, Response rs) {
+		return new ModelAndView(emptyMapForRenderingNothing, "add");
 	}
 
 	public ModelAndView index(Request r, Response response) {

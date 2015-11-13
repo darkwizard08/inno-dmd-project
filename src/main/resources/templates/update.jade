@@ -1,0 +1,60 @@
+// Created by kittn on 11/1/15.
+doctype html
+head
+    title #{data.publication.title}
+    link(href="/bootstrap.min.css", rel="stylesheet")
+    link(href="/info_page.css", rel="stylesheet")
+    body
+        form.form-main(method="post")
+            // data - map of the FullInfo
+            div
+                h2 Title:
+                input.form-input(name="title", value="#{data.publication.title}", required, style='width: '+(100/2)+'%')
+            div
+                h2 Year:
+                input.form-input(name="year", value="#{data.publication.year}", required, style='width: '+(100/2)+'%')
+            if data.publisher.Name != null
+                h2 Publisher:
+                input.form-input(name="publisher", value="#{data.publisher.Name}", required, style='width: '+(100/2)+'%')
+            if data.area.name != null
+                h2 Area:
+                input.form-input(name="area", value="#{data.area.name}", required, style='width: '+(100/2)+'%')
+            if data.word.word != null
+                h2 Keyword: #{data.word.word}
+            case data.publication.type
+                when "article"
+                    h2 Pages:
+                    input(name="pages", value="#{data.publication.pages}", required, style='width: '+(100/2)+'%')
+                    h2 Journal
+                    input(name="journal", value="#{data.addition.title}", required, style='width: '+(100/2)+'%')
+                    if data.addition.volume != null
+                        h2 Volume:
+                        input(name="volume", value="#{data.addition.volume}", required, style='width: '+(100/2)+'%')
+                    if data.addition.number != null
+                        h2 Number:
+                        input(name="number", value="#{data.addition.number}", required, style='width: '+(100/2)+'%')
+                when "proceedings"
+                    h2 Conference
+                    input(name="conference", value="#{data.addition.title}", required, style='width: '+(100/2)+'%')
+                    if data.addition.volume != null
+                        h2 Volume: #{data.addition.volume}
+                when "inproceedings"
+                    h2 Pages:
+                    input(name="pages", value="#{data.publication.pages}", required, style='width: '+(100/2)+'%')
+                    h2 Conference
+                    input(name="title", value="#{data.addition.title}", required, style='width: '+(100/2)+'%')
+                    if data.addition.volume != null
+                        h2 Volume:
+                        input(name="volume", value="#{data.addition.volume}", required, style='width: '+(100/2)+'%')
+                when "book"
+                    if data.publication.volume != null
+                        h2 Volume:
+                        input(name="volume", value="#{data.addition.volume}", required, style='width: '+(100/2)+'%')
+                when "incollection"
+                    h2 Pages:
+                    input(name="pages", value="#{data.publication.pages}", required, style='width: ' + (100 / 2) + '%')
+                    h2 Book
+                    input(name="title", value="#{data.addition.title}", required, style='width: ' + (100 / 2) + '%')
+                    if data.addition.volume != null
+                        h2 Volume:
+                        input(name="title", value="#{data.addition.volume}", required, style='width: ' + (100 / 2) + '%')

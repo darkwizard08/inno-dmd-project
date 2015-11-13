@@ -1,0 +1,20 @@
+doctype html
+html(lang="en")
+head
+    link(href="/bootstrap.min.css", rel="stylesheet")
+    link(href="/searching.css", rel="stylesheet")
+body
+    .container
+        -var curType = {typer:"qwe"}
+        select(name="type")
+            option(value="researchArea", selected=(typer=="researchArea")) Research area
+            option(value="authorName", selected=(typer=="authorName")) Author name
+            option(value="pubYear") Year of the publication
+            option(value="pubTitle") Title of the publication
+            option(value="keyword") Keywords
+            option(value="pubType") Type of the publication
+
+        if curType
+            div
+                p.
+                    #{curType.typer}

@@ -22,7 +22,7 @@ public class DBConnector {
 		try {
 			//Class.forName("postgresql.Driver");
 
-			conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/project", "postgres", "kh,UMg@~a8m'$F^s");
+			conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/dmdproject", "kittn", "1234");
 			System.out.println(conn);
 		} catch (Exception e) {
 			e.printStackTrace();

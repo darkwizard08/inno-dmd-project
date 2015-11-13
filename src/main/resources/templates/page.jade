@@ -2,54 +2,61 @@
 doctype html
 head
     title #{data.publication.title}
+    link(href="/bootstrap.min.css", rel="stylesheet")
+    link(href="/info_page.css", rel="stylesheet")
     body
-        // data - map of the FullInfo
-        h2 #{data.publication.title}
-        h2 Year: #{data.publication.year}
-        if data.publisher.Name != null
-            h2 Publisher: #{data.publisher.Name}
-        if data.area.name != null
-            h2 Area: #{data.area.name}
-        if data.word.word != null
-            h2 Keyword: #{data.word.word}
+        div.form-buttons
+            div.butt
+                a.btn.btn-lg.btn-primary.btn-block(href="/search?type=references&query=#{data.publication.ID}") Get references
+            div.butt
+                a.btn.btn-lg.btn-primary.btn-block(href="/search?type=citedBy&query=#{data.publication.ID}") Get cited by
+            div.butt
+                a.btn.btn-lg.btn-primary.btn-block(href="/publication/#{data.publication.ID}/update") Update
+        div.form-main
+            // data - map of the FullInfo
+            h2 #{data.publication.title}
+            h2 Year: #{data.publication.year}
+            if data.publisher.Name != null
+                h2 Publisher: #{data.publisher.Name}
+            if data.area.name != null
+                h2 Area: #{data.area.name}
+            if data.word.word != null
+                h2 Keyword: #{data.word.word}
 
-        case data.publication.type
-            when "article"
-                h2 Pages: #{data.publication.pages}
-                h1 Journal
-                h2 #{data.addition.title}
-                if data.addition.volume != null
-                    h2 Volume: #{data.addition.volume}
-                if data.addition.number != null
-                    h2 Number: #{data.addition.number}
-            when "proceedings"
-                h1 Conference
-                h2 #{data.addition.title}
-                if data.addition.volume != null
-                    h2 Volume: #{data.addition.volume}
-            when "inproceedings"
-                h2 Pages: #{data.publication.pages}
-                h1 Conference
-                h2 #{data.addition.title}
-                if data.addition.volume != null
-                    h2 Volume: #{data.addition.volume}
-            when "book"
-                if data.publication.volume != null
-                    h2 Volume: #{data.publication.volume}
-            when "incollection"
-                h2 Pages: #{data.publication.pages}
-                h1 Book
-                h2 #{data.addition.title}
-                if data.addition.volume != null
-                    h2 Volume: #{data.addition.volume}
+            case data.publication.type
+                when "article"
+                    if data.publication.pages != null
+                        h2 Pages: #{data.publication.pages}
+                    h1 Journal
+                    h2 #{data.addition.title}
+                    if data.addition.volume != null
+                        h2 Volume: #{data.addition.volume}
+                    if data.addition.number != null
+                        h2 Number: #{data.addition.number}
+                when "proceedings"
+                    h1 Conference
+                    h2 #{data.addition.title}
+                    if data.addition.volume != null
+                        h2 Volume: #{data.addition.volume}
+                when "inproceedings"
+                    h2 Pages: #{data.publication.pages}
+                    h1 Conference
+                    h2 #{data.addition.title}
+                    if data.addition.volume != null
+                        h2 Volume: #{data.addition.volume}
+                when "book"
+                    if data.publication.volume != null
+                        h2 Volume: #{data.publication.volume}
+                when "incollection"
+                    h2 Pages: #{data.publication.pages}
+                    h1 Book
+                    h2 #{data.addition.title}
+                    if data.addition.volume != null
+                        h2 Volume: #{data.addition.volume}
 
-        h1 Authors
-        each auth in data.authors
-            h2 #{auth.name}
-            if auth.institution.title
-                h3 #{auth.institution.title}
-
-        a(href="/search?type=references&query=#{data.publication.ID}") Get references
-        br
-        a(href="/search?type=citedBy&query=#{data.publication.ID}") Get cited by
-        br
+            h1 Authors
+            each auth in data.authors
+                a.h2.btn-link(href="/search?type=authorName&query=#{auth.name}") #{auth.name}
+                br
+                if auth.institution.title
+                    h3 #{auth.institution.title}

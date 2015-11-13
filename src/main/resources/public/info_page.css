@@ -1,6 +1,6 @@
 body {
-    padding-top: 40px;
-    padding-bottom: 40px;
+    /*padding-top: 40px;
+    padding-bottom: 40px; */
     background-color: #eee;
 }
 .form-main{
@@ -16,7 +16,8 @@ body {
     font-weight: normal;
 }
 .form-buttons {
-    max-width: 25%;
+    display: table;
+    max-width: 50%;
     margin: auto;
     position: relative;
     height: auto;
@@ -26,6 +27,7 @@ body {
     padding: 10px;
     font-size: 16px;
     font-weight: normal;
+    border-spacing: 10px;
 }
 
 .form-input {
@@ -37,4 +39,8 @@ body {
     box-sizing: border-box;
     font-size: 16px;
     font-weight: normal;
+}
+.butt {
+    width: 30%;
+    display: table-cell;
 }

@@ -5,6 +5,13 @@ head
     link(href="/bootstrap.min.css", rel="stylesheet")
     link(href="/info_page.css", rel="stylesheet")
     body
+        div.form-buttons
+            div.butt
+                a.btn.btn-lg.btn-primary.btn-block(href="/search?type=references&query=#{data.publication.ID}") Get references
+            div.butt
+                a.btn.btn-lg.btn-primary.btn-block(href="/search?type=citedBy&query=#{data.publication.ID}") Get cited by
+            div.butt
+                a.btn.btn-lg.btn-primary.btn-block(href="/publication/#{data.publication.ID}/update") Update
         div.form-main
             // data - map of the FullInfo
             h2 #{data.publication.title}
@@ -18,7 +25,8 @@ head
 
             case data.publication.type
                 when "article"
-                    h2 Pages: #{data.publication.pages}
+                    if data.publication.pages != null
+                        h2 Pages: #{data.publication.pages}
                     h1 Journal
                     h2 #{data.addition.title}
                     if data.addition.volume != null
@@ -49,9 +57,6 @@ head
             h1 Authors
             each auth in data.authors
                 a.h2.btn-link(href="/search?type=authorName&query=#{auth.name}") #{auth.name}
+                br
                 if auth.institution.title
                     h3 #{auth.institution.title}
-
-            div.form-buttons
-                button.btn.btn-lg.btn-primary.btn-block(href="/search?type=references&query=#{data.publication.ID}") Get references
-                button.btn.btn-lg.btn-primary.btn-block(href="/search?type=citedBy&query=#{data.publication.ID}") Get cited by

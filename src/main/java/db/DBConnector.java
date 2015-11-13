@@ -1,11 +1,6 @@
 package db;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
+import java.sql.*;
 
 /**
  * @author darkwizard
@@ -27,7 +22,7 @@ public class DBConnector {
 		try {
 			//Class.forName("postgresql.Driver");
 
-			conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/dmdproject", "kittn", "1234");
+			conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/project", "postgres", "kh,UMg@~a8m'$F^s");
 			System.out.println(conn);
 		} catch (Exception e) {
 			e.printStackTrace();

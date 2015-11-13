@@ -47,13 +47,17 @@ public class RequestProcessor {
 	public ModelAndView search(Request req, Response res) {
 		String searchFor = req.queryParams("query");
 		String searchType = req.queryParams("type");
+		String orderType = req.queryParams("order");
+		String sortType = req.queryParams("sort");
 		String offset = req.queryParams("offset") != null ? req.queryParams("offset") : "0";
 
 		HashMap<String, Object> mapping = new HashMap<>();
-		mapping.put("results", CollectionRetriever.getInstance().getPublications(searchType, searchFor, offset));
+		mapping.put("results", CollectionRetriever.getInstance().getPublications(searchType, searchFor, offset, sortType, orderType));
 		mapping.put("offset", offset);
 		mapping.put("query", searchFor);
 		mapping.put("type", searchType);
+		mapping.put("order", orderType);
+		mapping.put("sort", sortType);
 
 		return new ModelAndView(mapping, "searchresult");
 	}

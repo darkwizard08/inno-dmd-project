@@ -22,15 +22,27 @@ body
                 if results
                     h4 Found #{results[0].count} results
                     if (offset - 50) >= 0
-                        a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}") [Previous #{50} results]
+                        if sort
+                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}&sort=#{sort}&order=#{order}") [Previous #{50} results]
+                        else
+                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}") [Previous #{50} results]
                     else
                         | [Previous #{50} results]
                     | &#160;
                     if (offset + 50) < results[0].count
-                        a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}") [Next #{50} results]
+                        if sort
+                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}&sort=#{sort}&order=#{order}") [Next #{50} results]
+                        else
+                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}") [Next #{50} results]
                     else
                         | [Next #{50} results]
                     br
+                    select(name="", onchange="location.href = this.value")
+                        option(value="") Sort by
+                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=year&order=desc") Year descending
+                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=year&order=asc") Year ascending
+                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=cite&order=desc") Citation count descending
+                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=cite&order=asc") Citation count ascending
                     hr
                     each res in results
                         a(href="/publication/#{res.ID}") #{res.title}

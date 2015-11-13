@@ -17,15 +17,36 @@ import java.util.stream.Collectors;
  */
 public class CollectionRetriever {
 	private static CollectionRetriever retr = null;
-	private final HashMap<String, String> queries;
+	private final HashMap<String, String> queries, orderings, sortings, sortAttributes;
 	private final String limitOffset = "\nLIMIT %s\n" +
-			"OFFSET %s";
+			"OFFSET %s", orderBy = "\nORDER BY %s %s";
 	private DBConnector conn = null;
 
 	private CollectionRetriever() {
 		this.conn = DBConnector.getInstance();
 		this.conn.connect();
 		this.queries = new HashMap<>();
+		this.orderings = new HashMap<>();
+		this.sortings = new HashMap<>();
+		this.sortAttributes = new HashMap<>();
+
+		orderings.put("year", "\"Publication\".\"Year\"");
+		orderings.put("cite", "rank_cnt");
+		orderings.put(null, "");
+
+		sortings.put("cite", "LEFT OUTER JOIN (SELECT \n" +
+				"  \"Referenced\".\"RefPubID\", COUNT(\"Referenced\".\"PubID\") as count\n" +
+				"FROM\n" +
+				"  public.\"Referenced\"\n" +
+				"GROUP BY\n" +
+				"  \"Referenced\".\"RefPubID\") AS rank ON (rank.\"RefPubID\" = \"Publication\".\"ID\")\n");
+		sortings.put("year", "");
+		sortings.put(null, "");
+
+		sortAttributes.put("cite", ",\n" +
+				" coalesce(rank.count, 0) as rank_cnt");
+		sortAttributes.put("year", "");
+		sortAttributes.put(null, "");
 
 		queries.put("researchArea", "SELECT \n" +
 				"  \"Publication\".*\n" +
@@ -117,13 +138,16 @@ public class CollectionRetriever {
 	}
 	 */
 
-	public List<Object> getPublications(String searchType, String searchFor, String offset) {
+	public List<Object> getPublications(String searchType, String searchFor, String offset, String sortType, String orderType) {
 		String query = String.format(queries.get(searchType), searchFor, offset);
 		query = new StringBuffer(
 				query)
+				.insert(query.indexOf("WHERE"), sortings.get(sortType))
 				.insert(query.indexOf("WHERE"), "CROSS JOIN (" + query.replace("\"Publication\".*", "COUNT(*)") + ") AS count\n")
+				.insert(query.indexOf("\nFROM"), sortAttributes.get(sortType))
 				.insert(query.indexOf("\nFROM"), ",\n" +
 						" count.count") +
+				(sortType != null ? String.format(orderBy, orderings.get(sortType), orderType.toUpperCase()) : "") +
 				String.format(limitOffset, "50", offset);
 		ResultSet rs = conn.getRawQueryResult(query);
 		List<Object> result = this.processResult(rs, PublicationSearchResult.class);

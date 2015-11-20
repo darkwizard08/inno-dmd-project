@@ -1,8 +1,5 @@
 package model;
 
-/**
- * @author darkwizard
- */
 public class Journal {
 	public int journalID;
 	public String title;

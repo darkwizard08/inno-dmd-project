@@ -1,52 +1,54 @@
 doctype html
 html(lang="en")
 head
-    title Best DMD team ever project - index, main page
-    link(href="/bootstrap.min.css", rel="stylesheet")
-    link(href="/search_res.css", rel="stylesheet")
+	title Best DMD team ever project - index, main page
+	link(href="/bootstrap.min.css", rel="stylesheet")
+	link(href="/search_res.css", rel="stylesheet")
 body
-    .container
-        form.form-searching(name="searchingForm", action="/search", method="get")
-            input#searchFor.form-control(type="text", name = "query", placeholder = "search...", required, autofocus)
+	.container
+		form.form-searching(name="searchingForm", action="/search", method="get")
+			input#searchFor.form-control(type="text", name = "query", placeholder = "search...", required, autofocus)
 
-            select(name="type")
-                option(value="researchArea") Research area
-                option(value="authorName") Author name
-                option(value="pubYear") Year of the publication
-                option(value="pubTitle") Title of the publication
-                option(value="keyword") Keywords
-                option(value="pubType") Type of the publication
+			select(name="type")
+				option(value="researchArea") Research area
+				option(value="authorName") Author name
+				option(value="pubYear") Year of the publication
+				option(value="pubTitle") Title of the publication
+				option(value="keyword") Keywords
+				option(value="pubType") Type of the publication
+				option(value="institution") Institution
+				option(value="venue") Venue
 
-        div.form-results()
-            ol#articles
-                if results
-                    h4 Found #{results[0].count} results
-                    if (offset - 50) >= 0
-                        if sort
-                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}&sort=#{sort}&order=#{order}") [Previous #{50} results]
-                        else
-                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}") [Previous #{50} results]
-                    else
-                        | [Previous #{50} results]
-                    | &#160;
-                    if (offset + 50) < results[0].count
-                        if sort
-                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}&sort=#{sort}&order=#{order}") [Next #{50} results]
-                        else
-                            a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}") [Next #{50} results]
-                    else
-                        | [Next #{50} results]
-                    br
-                    select(name="", onchange="location.href = this.value")
-                        option(value="") Sort by
-                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=year&order=desc") Year descending
-                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=year&order=asc") Year ascending
-                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=cite&order=desc") Citation count descending
-                        option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=cite&order=asc") Citation count ascending
-                    hr
-                    each res in results
-                        a(href="/publication/#{res.ID}") #{res.title}
-                        br
-                        p Year: #{res.year} Type: #{res.type}
-                else
-                    p No results :(
+		div.form-results()
+			ol#articles
+				if results
+					h4 Found #{results[0].count} results
+					if (offset - 50) >= 0
+						if sort
+							a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}&sort=#{sort}&order=#{order}") [Previous #{50} results]
+						else
+							a(href="/search?type=#{type}&query=#{query}&offset=#{offset - 50}") [Previous #{50} results]
+					else
+						| [Previous #{50} results]
+					| &#160;
+					if (offset + 50) < results[0].count
+						if sort
+							a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}&sort=#{sort}&order=#{order}") [Next #{50} results]
+						else
+							a(href="/search?type=#{type}&query=#{query}&offset=#{offset + 50}") [Next #{50} results]
+					else
+						| [Next #{50} results]
+					br
+					select(name="", onchange="location.href = this.value")
+						option(value="") Sort by
+						option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=year&order=desc") Year descending
+						option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=year&order=asc") Year ascending
+						option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=cite&order=desc") Citation count descending
+						option(value="/search?type=#{type}&query=#{query}&offset=#{offset}&sort=cite&order=asc") Citation count ascending
+					hr
+					each res in results
+						a(href="/publication/#{res.ID}") #{res.title}
+						br
+						p Year: #{res.year} Type: #{res.type}
+				else
+					p No results :(

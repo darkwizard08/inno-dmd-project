@@ -41,6 +41,6 @@ body {
     font-weight: normal;
 }
 .butt {
-    width: 30%;
+    width: auto;
     display: table-cell;
 }

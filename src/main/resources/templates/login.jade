@@ -1,20 +1,19 @@
 doctype html
 html(lang="en")
 head
-    title Best team ever DMD Project - login
+    title Login
 
     link(href="/bootstrap.min.css", rel="stylesheet")
     link(href="/signin.css", rel="stylesheet")
 body
     .container
-        form#loginForm.form-signin(action="/authorize", method="post")
+        form#loginForm.form-signin(action="/login", method="post", name="login")
             h2.form-signin-heading Please sign in
-            label(for="inputLogin", class="sr-only") Login
-            input#inputLogin.form-control(name="username", type="text", placeholder="login", required, autofocus)
-            label.sr-only(for="inputPassword") Password
-            input#inputPassword.form-control(name="password", type="password", placeholder="Password", required)
-            .checkbox
-                label
-                input(type="checkbox", value="remember-me") Remember me
+            input#inputLogin.form-control(name="username", type="text", placeholder="Username", required, autofocus, onchange="document.register.username.value = this.value;")
+            input#inputPassword.form-control(name="password", type="password", placeholder="Password", required, onchange="document.register.password.value = this.value;")
 
             button.btn.btn-lg.btn-primary.btn-block(type="submit") Sign in
+        form#loginForm.form-signin(action="/register", method="post", name="register")
+            input(name="username", type="hidden")
+            input(name="password", type="hidden")
+            button.btn.btn-lg.btn-primary.btn-block(type="submit") Register

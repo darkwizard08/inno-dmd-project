@@ -40,6 +40,17 @@ public class DBConnector {
 
 	}
 
+	public int executeNonQuery(String rawSQLQuery){
+		try{
+			Statement st = conn.createStatement();
+			return st.executeUpdate(rawSQLQuery);
+		}
+		catch (SQLException e){
+			e.printStackTrace();
+			throw new Error("Please, check your params!");
+		}
+	}
+
 	public void closeConnection() {
 		try {
 			conn.close();

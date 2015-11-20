@@ -1,20 +1,52 @@
 doctype html
-html(lang="en")
 head
-    link(href="/bootstrap.min.css", rel="stylesheet")
-    link(href="/searching.css", rel="stylesheet")
-body
-    .container
-        -var curType = {typer:"qwe"}
-        select(name="type")
-            option(value="researchArea", selected=(typer=="researchArea")) Research area
-            option(value="authorName", selected=(typer=="authorName")) Author name
-            option(value="pubYear") Year of the publication
-            option(value="pubTitle") Title of the publication
-            option(value="keyword") Keywords
-            option(value="pubType") Type of the publication
-
-        if curType
-            div
-                p.
-                    #{curType.typer}
+	title Add #{type}
+	body
+		form(action="/add", method="post")
+			input(name="type", value=type, type="hidden")
+			div
+				h2 Title:
+				input(name="title", required)
+				h2 Year:
+				input(name="year", required)
+				h2 Publisher:
+				input(name="publisher")
+				h2 Area:
+				input(name="area")
+				h2 Keyword:
+				input(name="keyword")
+				case type
+					when "article"
+						h2 Pages:
+						input(name="pages")
+						h2 Journal title:
+						input(name="journal", required)
+						h2 Volume:
+						input(name="volume")
+						h2 Number:
+						input(name="number")
+					when "proceedings"
+						h2 Conference title:
+						input(name="conference", required)
+						h2 Volume:
+						input(name="volume")
+					when "inproceedings"
+						h2 Pages:
+						input(name="pages")
+						h2 Proceedings title:
+						input(name="proceedings", required)
+						h2 Proceedings year:
+						input(name="proceedingsyear", required)
+					when "incollection"
+						h2 Pages:
+						input(name="pages")
+						h2 Book title:
+						input(name="book", required)
+						h2 Book year:
+						input(name="bookyear", required)
+						h2 Book volume:
+						input(name="volume")
+					when "book"
+						h2 Volume:
+						input(name="volume")
+				button(type="submit") Add

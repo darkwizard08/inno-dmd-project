@@ -1,62 +1,66 @@
 // Created by kittn on 11/1/15.
 doctype html
 head
-    title #{data.publication.title}
-    link(href="/bootstrap.min.css", rel="stylesheet")
-    link(href="/info_page.css", rel="stylesheet")
-    body
-        div.form-buttons
-            div.butt
-                a.btn.btn-lg.btn-primary.btn-block(href="/search?type=references&query=#{data.publication.ID}") Get references
-            div.butt
-                a.btn.btn-lg.btn-primary.btn-block(href="/search?type=citedBy&query=#{data.publication.ID}") Get cited by
-            div.butt
-                a.btn.btn-lg.btn-primary.btn-block(href="/publication/#{data.publication.ID}/update") Update
-        div.form-main
-            // data - map of the FullInfo
-            h2 #{data.publication.title}
-            h2 Year: #{data.publication.year}
-            if data.publisher.Name != null
-                h2 Publisher: #{data.publisher.Name}
-            if data.area.name != null
-                h2 Area: #{data.area.name}
-            if data.word.word != null
-                h2 Keyword: #{data.word.word}
+	title #{data.publication.title}
+	link(href="/bootstrap.min.css", rel="stylesheet")
+	link(href="/info_page.css", rel="stylesheet")
+	body
+		div.form-buttons
+			div.butt
+				a.btn.btn-lg.btn-primary.btn-block(href="/search?type=references&query=#{data.publication.ID}") References
+			div.butt
+				a.btn.btn-lg.btn-primary.btn-block(href="/search?type=citedBy&query=#{data.publication.ID}") Cited by
+			div.butt
+				a.btn.btn-lg.btn-primary.btn-block(href="/publication/#{data.publication.ID}/update") Update
+			div.butt
+			form(action="/publication/#{data.publication.ID}/delete", method="post")
+				input(name="type", value=data.publication.type, type="hidden")
+				button.btn.btn-lg.btn-primary.btn-block(type="submit") Delete
+		div.form-main
+			// data - map of the FullInfo
+			h2 #{data.publication.title}
+			h2 Year: #{data.publication.year}
+			if data.publisher.name != null
+				h2 Publisher: #{data.publisher.name}
+			if data.area.name != null
+				a.h2.btn-link(href="/search?type=researchArea&query=#{data.area.name}") Area: #{data.area.name}
+			if data.word.word != null
+				a.h2.btn-link(href="/search?type=keyword&query=#{data.word.word}") Keyword: #{data.word.word}
 
-            case data.publication.type
-                when "article"
-                    if data.publication.pages != null
-                        h2 Pages: #{data.publication.pages}
-                    h1 Journal
-                    h2 #{data.addition.title}
-                    if data.addition.volume != null
-                        h2 Volume: #{data.addition.volume}
-                    if data.addition.number != null
-                        h2 Number: #{data.addition.number}
-                when "proceedings"
-                    h1 Conference
-                    h2 #{data.addition.title}
-                    if data.addition.volume != null
-                        h2 Volume: #{data.addition.volume}
-                when "inproceedings"
-                    h2 Pages: #{data.publication.pages}
-                    h1 Conference
-                    h2 #{data.addition.title}
-                    if data.addition.volume != null
-                        h2 Volume: #{data.addition.volume}
-                when "book"
-                    if data.publication.volume != null
-                        h2 Volume: #{data.publication.volume}
-                when "incollection"
-                    h2 Pages: #{data.publication.pages}
-                    h1 Book
-                    h2 #{data.addition.title}
-                    if data.addition.volume != null
-                        h2 Volume: #{data.addition.volume}
+			case data.publication.type
+				when "article"
+					if data.publication.pages != null
+						h2 Pages: #{data.publication.pages}
+					h1 Journal
+					a.h2.btn-link(href="/search?type=venue&query=#{data.addition.title}") #{data.addition.title}
+					if data.addition.volume != null
+						h2 Volume: #{data.addition.volume}
+					if data.addition.number != null
+						h2 Number: #{data.addition.number}
+				when "proceedings"
+					h1 Conference
+					a.h2.btn-link(href="/search?type=venue&query=#{data.addition.title}") #{data.addition.title}
+					if data.addition.volume != null
+						h2 Volume: #{data.addition.volume}
+				when "inproceedings"
+					h2 Pages: #{data.publication.pages}
+					h1 Proceedings
+					a.h2.btn-link(href="/publication/#{data.addition.publication.ID}") #{data.addition.publication.title}
+					h2 Year: #{data.addition.publication.year}
+				when "book"
+					if data.publication.volume != null
+						h2 Volume: #{data.publication.volume}
+				when "incollection"
+					h2 Pages: #{data.publication.pages}
+					h1 Book
+					a.h2.btn-link(href="/publication/#{data.addition.publication.ID}") #{data.addition.publication.title}
+					h2 Year: #{data.addition.publication.year}
+					if data.addition.volume != null
+						h2 Volume: #{data.addition.publication.volume}
 
-            h1 Authors
-            each auth in data.authors
-                a.h2.btn-link(href="/search?type=authorName&query=#{auth.name}") #{auth.name}
-                br
-                if auth.institution.title
-                    h3 #{auth.institution.title}
+			h1 Authors
+			each auth in data.authors
+				a.h2.btn-link(href="/search?type=authorName&query=#{auth.name}") #{auth.name}
+				br
+				if auth.institution.title
+					a.h3.btn-link(href="/search?type=institution&query=#{auth.institution.title}") #{auth.institution.title}

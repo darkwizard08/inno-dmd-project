@@ -6,20 +6,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author darkwizard
- */
 public class CollectionRetriever {
 	private static CollectionRetriever retr = null;
 	private final HashMap<String, String> queries, orderings, sortings, sortAttributes;
 	private final String limitOffset = "\nLIMIT %s\n" +
 			"OFFSET %s", orderBy = "\nORDER BY %s %s";
+	private final HashSet<String> types;
 	private DBConnector conn = null;
 
 	private CollectionRetriever() {
@@ -29,6 +24,7 @@ public class CollectionRetriever {
 		this.orderings = new HashMap<>();
 		this.sortings = new HashMap<>();
 		this.sortAttributes = new HashMap<>();
+		types = new HashSet<>(Arrays.asList("article", "proceedings", "inproceedings", "incollection", "book"));
 
 		orderings.put("year", "\"Publication\".\"Year\"");
 		orderings.put("cite", "rank_cnt");
@@ -59,7 +55,7 @@ public class CollectionRetriever {
 				"  \"PubArea\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
 				"  \"Area\".\"Name\" like '%%%s%%'");
 
-		queries.put("authorName", "SELECT \n" +
+		queries.put("authorName", "SELECT DISTINCT \n" +
 				" \"Publication\".*\n" +
 				"FROM \n" +
 				" public.\"InstAuthPub\", \n" +
@@ -95,16 +91,17 @@ public class CollectionRetriever {
 				"  public.\"PubKeyword\", \n" +
 				"  public.\"Publication\"\n" +
 				"WHERE \n" +
-				"  \"Keyword\".\"ID\" = \"PubKeyword\".\"AreaID\" AND\n" +
+				"  \"Keyword\".\"ID\" = \"PubKeyword\".\"KeywordID\" AND\n" +
 				"  \"PubKeyword\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
 				"  \"Keyword\".\"Word\" like '%%%s%%'");
 
 		queries.put("pubType", "SELECT \n" +
 				"  \"Publication\".*\n" +
 				"FROM \n" +
-				"  public.\"Publication\"\n" +
+				"  public.\"Publication\", \n" +
+				"  public.\"%1$s\"\n" +
 				"WHERE \n" +
-				"  \"Publication\".\"Type\" = '%s'");
+				"  \"%1$s\".\"PubID\" = \"Publication\".\"ID\"");
 
 		queries.put("references", "SELECT \n" +
 				"  \"Publication\".*\n" +
@@ -123,6 +120,54 @@ public class CollectionRetriever {
 				"WHERE \n" +
 				"  \"Referenced\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
 				"  \"Referenced\".\"RefPubID\" = %s");
+
+		queries.put("institution", "SELECT DISTINCT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Publication\", \n" +
+				"  public.\"InstAuthPub\", \n" +
+				"  public.\"Institution\"\n" +
+				"WHERE \n" +
+				"  \"InstAuthPub\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
+				"  \"InstAuthPub\".\"InstID\" = \"Institution\".\"ID\" AND\n" +
+				"  \"Institution\".\"Title\" like '%%%s%%'");
+
+		queries.put("venue", "SELECT \n" +
+				"  \"Publication\".*\n" +
+				"FROM \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE\n" +
+				"  \"Publication\".\"ID\" IN (\n" +
+				"  SELECT \n" +
+				"    \"Article\".\"PubID\"\n" +
+				"  FROM  \n" +
+				"    public.\"Article\"\n" +
+				"  WHERE \n" +
+				"    \"Article\".\"JournalID\" IN (SELECT \"Journal\".\"ID\" from public.\"Journal\" where \"Journal\".\"Title\" like '%%%1$s%%')\n" +
+				"\n" +
+				"  UNION\n" +
+				"\n" +
+				"  SELECT \n" +
+				"    \"Proceedings\".\"PubID\"\n" +
+				"  FROM  \n" +
+				"    public.\"Proceedings\"\n" +
+				"  WHERE \n" +
+				"    \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" like '%%%1$s%%')\n" +
+				"\n" +
+				"  UNION\n" +
+				"\n" +
+				"  SELECT \n" +
+				"    \"Inproceedings\".\"PubID\"\n" +
+				"  FROM  \n" +
+				"    public.\"Inproceedings\"\n" +
+				"  WHERE \n" +
+				"    \"Inproceedings\".\"Crossref\" IN (\n" +
+				"    SELECT \n" +
+				"      \"Proceedings\".\"PubID\"\n" +
+				"    FROM  \n" +
+				"      public.\"Proceedings\"\n" +
+				"    WHERE \n" +
+				"      \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" like '%%%1$s%%')))");
 	}
 
 	public static CollectionRetriever getInstance() {
@@ -139,75 +184,27 @@ public class CollectionRetriever {
 	 */
 
 	public List<Object> getPublications(String searchType, String searchFor, String offset, String sortType, String orderType) {
+		if (searchType.equals("pubType")) {
+			searchFor = searchFor.toLowerCase();
+			if (!types.contains(searchFor.toLowerCase())) {
+				return null;
+			}
+			searchFor = Character.toUpperCase(searchFor.charAt(0)) + searchFor.substring(1);
+		}
+
 		String query = String.format(queries.get(searchType), searchFor, offset);
 		query = new StringBuffer(
 				query)
 				.insert(query.indexOf("WHERE"), sortings.get(sortType))
-				.insert(query.indexOf("WHERE"), "CROSS JOIN (" + query.replace("\"Publication\".*", "COUNT(*)") + ") AS count\n")
+				.insert(query.indexOf("WHERE"), "CROSS JOIN (" + query.replace("\"Publication\".*", "COUNT(DISTINCT \"Publication\".\"ID\")") + ") AS count\n")
 				.insert(query.indexOf("\nFROM"), sortAttributes.get(sortType))
 				.insert(query.indexOf("\nFROM"), ",\n" +
 						" count.count") +
-				(sortType != null ? String.format(orderBy, orderings.get(sortType), orderType.toUpperCase()) : "") +
+				(sortType != null ? String.format(orderBy, orderings.get(sortType), orderType.toUpperCase()) : String.format(orderBy, "\"Publication\".\"ID\"", "ASC")) +
 				String.format(limitOffset, "50", offset);
 		ResultSet rs = conn.getRawQueryResult(query);
 		List<Object> result = this.processResult(rs, PublicationSearchResult.class);
 		return result.size() == 0 ? null : result;
-	}
-
-	public List<Object> getPublicationsOnVenueName(String searchFor) {
-		String query = "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE\n" +
-				"  \"Publication\".\"ID\" IN (\n" +
-				"  SELECT \n" +
-				"    \"Article\".\"PubID\"\n" +
-				"  FROM  \n" +
-				"    public.\"Article\"\n" +
-				"  WHERE \n" +
-				"    \"Article\".\"JournalID\" IN (SELECT \"Journal\".\"ID\" from public.\"Journal\" where \"Journal\".\"Title\" = '" + searchFor + "')\n" +
-				"\n" +
-				"  UNION\n" +
-				"\n" +
-				"  SELECT \n" +
-				"    \"Proceedings\".*\n" +
-				"  FROM  \n" +
-				"    public.\"Proceedings\"\n" +
-				"  WHERE \n" +
-				"    \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" = '" + searchFor + "')\n" +
-				"\n" +
-				"  UNION\n" +
-				"\n" +
-				"  SELECT \n" +
-				"    \"Inproceedings\".*\n" +
-				"  FROM  \n" +
-				"    public.\"Inproceedings\"\n" +
-				"  WHERE \n" +
-				"    \"Inproceedings\".\"Crossref\" IN (\n" +
-				"    SELECT \n" +
-				"      \"Proceedings\".\"PubID\"\n" +
-				"    FROM  \n" +
-				"      public.\"Proceedings\"\n" +
-				"    WHERE \n" +
-				"      \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" = '" + searchFor + "')));\n" +
-				"\n" +
-				"\n";
-		return this.processResult(conn.getRawQueryResult(query), Publication.class);
-	}
-
-	public List<Object> getPublicationsOnInstitution(String searchFor) {
-		String query = "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\", \n" +
-				"  public.\"InstAuthPub\", \n" +
-				"  public.\"Institution\"\n" +
-				"WHERE \n" +
-				"  \"InstAuthPub\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"InstAuthPub\".\"InstID\" = \"Institution\".\"ID\" AND\n" +
-				"  \"Institution\".\"Title\" like '%" + searchFor + "%';";
-		return this.processResult(conn.getRawQueryResult(query), Publication.class);
 	}
 
 	public FullInfo getFullPublicationInfo(int pubId) {
@@ -288,26 +285,18 @@ public class CollectionRetriever {
 						break;
 					case "inproceedings":
 						query = "SELECT \n" +
-								"  \"Conference\".\"ID\", \n" +
-								"  \"Conference\".\"Title\", \n" +
-								"  \"Conference\".\"Volume\", \n" +
 								"  \"Inproceedings\".\"Crossref\"\n" +
 								"  \"Inproceedings\".\"Pages\", \n" +
 								"FROM \n" +
-								"  public.\"Proceedings\", \n" +
-								"  public.\"Conference\", \n" +
 								"  public.\"Inproceedings\"\n" +
 								"WHERE \n" +
-								"  \"Proceedings\".\"ConferenceID\" = \"Conference\".\"ID\" AND\n" +
-								"  \"Inproceedings\".\"Crossref\" = \"Proceedings\".\"PubID\" AND\n" +
 								"  \"Inproceedings\".\"PubID\" = " + pubId + ";";
 
 						rs2 = conn.getRawQueryResult(query);
 						while (rs2.next()) {
-							Conference j = new Conference(rs2.getInt(1), rs2.getString(2), rs2.getString(3));
-							Inproceedings inproc = new Inproceedings(publication, rs2.getInt(4), rs2.getString(5));
+							Inproceedings inproc = new Inproceedings(publication, rs2.getInt(1), rs2.getString(2));
 							result = new FullInfo(inproc, a, keyword, publisher);
-							result.setAddition(j);
+							result.setAddition(getFullPublicationInfo(rs2.getInt(1)));
 						}
 						break;
 					case "book":
@@ -321,28 +310,23 @@ public class CollectionRetriever {
 						rs2 = conn.getRawQueryResult(query);
 						while (rs2.next()) {
 							Book j = new Book(publication, rs2.getString(1));
-
 							result = new FullInfo(j, a, keyword, publisher);
 						}
 						break;
 					case "incollection":
 						query = "SELECT \n" +
-								"  \"Book\".\"Volume\", \n" +
 								"  \"Incollection\".\"Crossref\", \n" +
 								"  \"Incollection\".\"Pages\" \n" +
 								"FROM \n" +
-								"  public.\"Book\", \n" +
 								"  public.\"Incollection\"\n" +
 								"WHERE \n" +
-								"  \"Incollection\".\"Crossref\" = \"Book\".\"PubID\" AND\n" +
 								"  \"Incollection\".\"PubID\" = " + pubId + ";\n";
 
 						rs2 = conn.getRawQueryResult(query);
 						while (rs2.next()) {
-							Book j = new Book(getFullPublicationInfo(rs2.getInt(2)).publication, rs2.getString(1));
-							Incollection incoll = new Incollection(publication, rs2.getInt(2), rs2.getString(3));
+							Incollection incoll = new Incollection(publication, rs2.getInt(1), rs2.getString(2));
 							result = new FullInfo(incoll, a, keyword, publisher);
-							result.setAddition(j);
+							result.setAddition(getFullPublicationInfo(rs2.getInt(1)));
 						}
 						break;
 				}
@@ -357,7 +341,10 @@ public class CollectionRetriever {
 						"    JOIN \"Author\" ON (\"InstAuthPub\".\"Author\" = \"Author\".\"Name\")\n" +
 						"WHERE \n" +
 						"   \"InstAuthPub\".\"PubID\" = " + pubId + ";";
-				result.setAuthors(this.processResult(conn.getRawQueryResult(query), Author.class));
+				if (result != null) {
+					List<Object> authors = this.processResult(conn.getRawQueryResult(query), Author.class);
+					result.setAuthors(authors);
+				}
 				return result;
 			}
 		} catch (SQLException e) {
@@ -368,11 +355,15 @@ public class CollectionRetriever {
 	}
 
 	public List<Object> processResult(ResultSet result, Class collectionOf) {
+		return processResult(result, collectionOf, 0);
+	}
+
+	public List<Object> processResult(ResultSet result, Class collectionOf, int constID) {
 		List<Object> answer = new LinkedList<>();
 
 		try {
 			while (result.next()) {
-				Constructor c = collectionOf.getDeclaredConstructors()[0];
+				Constructor c = collectionOf.getDeclaredConstructors()[constID];
 				Object[] array = new Object[c.getParameterCount()];
 				for (int i = 0; i < c.getParameterCount(); ++i)
 					array[i] = ("" + c.getParameterTypes()[i].getSimpleName()).compareTo("int") == 0
@@ -414,5 +405,131 @@ public class CollectionRetriever {
 		ResultSet result = conn.getRawQueryResult(sqlQuery);
 
 		return this.processResult(result, collectionOf);
+	}
+
+	public User getUser(String name) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"User\"\n" +
+				"WHERE \n" +
+				"  \"User\".\"Username\" ='" + name + "'\n";
+		List<Object> result = processResult(conn.getRawQueryResult(query), User.class);
+		return result.size() > 0 ? (User) result.get(0) : null;
+	}
+
+	public Journal getJournal(String title, String volume, String number) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"Journal\"\n" +
+				"WHERE \n" +
+				"  \"Journal\".\"Title\" = '" + title + "' AND \n" +
+				"  \"Journal\".\"Volume\" = '" + volume + "' AND \n" +
+				"  \"Journal\".\"Number\" = '" + number + "'";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Journal.class);
+		return result.size() > 0 ? (Journal) result.get(0) : null;
+	}
+
+	public Conference getConference(String title, String volume) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"Conference\"\n" +
+				"WHERE \n" +
+				"  \"Conference\".\"Title\" = '" + title + "' AND \n" +
+				"  \"Conference\".\"Volume\" = '" + volume + "'\n";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Conference.class);
+		return result.size() > 0 ? (Conference) result.get(0) : null;
+	}
+
+	public Book getBook(String title, String year, String volume) {
+		String query = "SELECT \n" +
+				"  \"Publication\".\"ID\", \n" +
+				"  \"Publication\".\"Title\", \n" +
+				"  \"Publication\".\"Year\", \n" +
+				"  \"Book\".\"Volume\"\n" +
+				"FROM \n" +
+				"  public.\"Book\", \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE \n" +
+				"  \"Book\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
+				"  \"Publication\".\"Title\" = '" + title + "' AND \n" +
+				"  \"Publication\".\"Year\" = " + year + " AND \n" +
+				"  \"Book\".\"Volume\" = '" + volume + "'";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Book.class);
+		return result.size() > 0 ? (Book) result.get(0) : null;
+	}
+
+	public Proceedings getProceedings(String title, String year) {
+		String query = "SELECT \n" +
+				"  \"Publication\".\"ID\", \n" +
+				"  \"Publication\".\"Title\", \n" +
+				"  \"Publication\".\"Year\", \n" +
+				"  \"Book\".\"Volume\"\n" +
+				"FROM \n" +
+				"  public.\"Book\", \n" +
+				"  public.\"Publication\"\n" +
+				"WHERE \n" +
+				"  \"Book\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
+				"  \"Publication\".\"Title\" = '" + title + "' AND \n" +
+				"  \"Publication\".\"Year\" = " + year;
+		List<Object> result = processResult(conn.getRawQueryResult(query), Proceedings.class);
+		return result.size() > 0 ? (Proceedings) result.get(0) : null;
+	}
+
+	public Area getArea(String name) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"Area\"\n" +
+				"WHERE \n" +
+				"  \"Area\".\"Name\" = '" + name + "'";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Area.class);
+		return result.size() > 0 ? (Area) result.get(0) : null;
+	}
+
+	public Keyword getKeyword(String word) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"Keyword\"\n" +
+				"WHERE \n" +
+				"  \"Keyword\".\"Word\" = '" + word + "'";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Keyword.class);
+		return result.size() > 0 ? (Keyword) result.get(0) : null;
+	}
+
+	public Institution getInstitution(String title) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"Institution\"\n" +
+				"WHERE \n" +
+				"  \"Institution\".\"Title\" = '" + title + "'";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Institution.class);
+		return result.size() > 0 ? (Institution) result.get(0) : null;
+	}
+
+	public Publisher getPublisher(String name) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"Publisher\"\n" +
+				"WHERE \n" +
+				"  \"Publisher\".\"Name\" = '" + name + "'";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Publisher.class);
+		return result.size() > 0 ? (Publisher) result.get(0) : null;
+	}
+
+	public Author getAuthor(String name) {
+		String query = "SELECT \n" +
+				"  * \n" +
+				"FROM \n" +
+				"  public.\"Author\"\n" +
+				"WHERE \n" +
+				"  \"Author\".\"Name\" = '" + name + "'";
+		List<Object> result = processResult(conn.getRawQueryResult(query), Author.class, 1);
+		return result.size() > 0 ? (Author) result.get(0) : null;
 	}
 }

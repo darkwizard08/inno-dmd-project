@@ -5,11 +5,11 @@ package model;
  */
 public class Publisher {
 	public int ID;
-	public String Name;
+	public String name;
 
 	public Publisher(int ID, String name) {
 		this.ID = ID;
-		Name = name;
+		name = name;
 	}
 
 	public int getID() {
@@ -21,10 +21,10 @@ public class Publisher {
 	}
 
 	public String getName() {
-		return Name;
+		return name;
 	}
 
 	public void setName(String name) {
-		Name = name;
+		this.name = name;
 	}
 }

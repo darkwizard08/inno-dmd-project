@@ -5,59 +5,84 @@ head
     link(href="/bootstrap.min.css", rel="stylesheet")
     link(href="/info_page.css", rel="stylesheet")
     body
-        form.form-main(method="post")
+        form.form-main(action="/publication/#{data.publication.ID}/update", method="post")
+            input(name="ID", value=data.publication.ID, type="hidden")
+            input(name="type", value=data.publication.type, type="hidden")
             // data - map of the FullInfo
             div
                 h2 Title:
-                input.form-input(name="title", value="#{data.publication.title}", required, style='width: '+(100/2)+'%')
-            div
+                input(name="title", value=data.publication.title, required)
                 h2 Year:
-                input.form-input(name="year", value="#{data.publication.year}", required, style='width: '+(100/2)+'%')
-            if data.publisher.Name != null
+                input(name="year", value=data.publication.year, required)
                 h2 Publisher:
-                input.form-input(name="publisher", value="#{data.publisher.Name}", required, style='width: '+(100/2)+'%')
-            if data.area.name != null
+                input(name="publisher", value=data.publisher.name)
                 h2 Area:
-                input.form-input(name="area", value="#{data.area.name}", required, style='width: '+(100/2)+'%')
-            if data.word.word != null
-                h2 Keyword: #{data.word.word}
-            case data.publication.type
-                when "article"
-                    h2 Pages:
-                    input(name="pages", value="#{data.publication.pages}", required, style='width: '+(100/2)+'%')
-                    h2 Journal
-                    input(name="journal", value="#{data.addition.title}", required, style='width: '+(100/2)+'%')
-                    if data.addition.volume != null
+                input(name="area", value=data.area.name)
+                h2 Keyword:
+                input(name="keyword", value=data.word.word)
+                case data.publication.type
+                    when "article"
+                        h2 Pages:
+                        input(name="pages", value=data.publication.pages)
+                        h2 Journal title:
+                        input(name="journal", required, value=data.addition.title)
                         h2 Volume:
-                        input(name="volume", value="#{data.addition.volume}", required, style='width: '+(100/2)+'%')
-                    if data.addition.number != null
+                        input(name="volume", value=data.addition.volume)
                         h2 Number:
-                        input(name="number", value="#{data.addition.number}", required, style='width: '+(100/2)+'%')
-                when "proceedings"
-                    h2 Conference
-                    input(name="conference", value="#{data.addition.title}", required, style='width: '+(100/2)+'%')
-                    if data.addition.volume != null
-                        h2 Volume: #{data.addition.volume}
-                when "inproceedings"
-                    h2 Pages:
-                    input(name="pages", value="#{data.publication.pages}", required, style='width: '+(100/2)+'%')
-                    h2 Conference
-                    input(name="title", value="#{data.addition.title}", required, style='width: '+(100/2)+'%')
-                    if data.addition.volume != null
+                        input(name="number", value=data.addition.number)
+                    when "proceedings"
+                        h2 Conference title:
+                        input(name="conference", required, value=data.addition.title)
                         h2 Volume:
-                        input(name="volume", value="#{data.addition.volume}", required, style='width: '+(100/2)+'%')
-                when "book"
-                    if data.publication.volume != null
+                        input(name="volume", value=data.addition.volume)
+                    when "inproceedings"
+                        h2 Pages:
+                        input(name="pages", value=data.publication.pages)
+                        h2 Proceedings title:
+                        input(name="proceedings", required, value=data.addition.publication.title)
+                        h2 Proceedings year:
+                        input(name="proceedingsyear", required, value=data.addition.publication.year)
+                    when "incollection"
+                        h2 Pages:
+                        input(name="pages", value=data.publication.pages)
+                        h2 Book title:
+                        input(name="book", required, value=data.addition.publication.title)
+                        h2 Book year:
+                        input(name="bookyear", required, value=data.addition.publication.year)
+                        h2 Book volume:
+                        input(name="volume", value=data.addition.publication.volume)
+                    when "book"
                         h2 Volume:
-                        input(name="volume", value="#{data.addition.volume}", required, style='width: '+(100/2)+'%')
-                when "incollection"
-                    h2 Pages:
-                    input(name="pages", value="#{data.publication.pages}", required, style='width: ' + (100 / 2) + '%')
-                    h2 Book
-                    input(name="title", value="#{data.addition.title}", required, style='width: ' + (100 / 2) + '%')
-                    if data.addition.volume != null
-                        h2 Volume:
-                        input(name="title", value="#{data.addition.volume}", required, style='width: ' + (100 / 2) + '%')
+                        input(name="volume", value=data.publication.volume)
 
             div.form-buttons
                 button.btn.btn-lg.btn-primary.btn-block(type="submit") Update
+        div.form-main
+            h1 Authors
+                each auth in data.authors
+                    div
+                        #{auth.name}
+                        form(action="/publication/#{data.publication.ID}/author/remove", method="post")
+                            div
+                                input(name="name", type="hidden", value="#{auth.name}")
+                                button.btn.btn-lg.btn-primary.btn-block(type="submit") [-]
+                        br
+                    if auth.institution.title
+                        h3 #{auth.institution.title}
+                form(action="/publication/#{data.publication.ID}/author/add", method="post")
+                    h2 Name:
+                    input.form-input(name="name", required, style='width: ' + (100 / 2) + '%')
+                    h2 Alias:
+                    input.form-input(name="alias", style='width: ' + (100 / 2) + '%')
+                    h2 Institution:
+                    input.form-input(name="institution", style='width: ' + (100 / 2) + '%')
+                    button.btn.btn-lg.btn-primary.btn-block(type="submit") [+]
+        div.form-main
+            h1 Reference
+                form(action="/publication/#{data.publication.ID}/reference/add", method="post")
+                    input.form-input(name="RefPubID", required, style='width: ' + (100 / 2) + '%', onchange="document.removeReference.RefPubID.value = this.value;")
+                    button.btn.btn-lg.btn-primary.btn-block(type="submit") [+]
+                form(name="removeReference", action="/publication/#{data.publication.ID}/reference/remove", method="post")
+                    input(name="RefPubID", type="hidden")
+                    button.btn.btn-lg.btn-primary.btn-block(type="submit") [-]
+

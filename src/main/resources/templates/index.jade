@@ -1,19 +1,30 @@
 doctype html
 html(lang="en")
 head
-    title Best DMD team ever project - index, main page
-    link(href="/bootstrap.min.css", rel="stylesheet")
-    link(href="/searching.css", rel="stylesheet")
+	title Best DMD team ever project - index, main page
+	link(href="/bootstrap.min.css", rel="stylesheet")
+	link(href="/searching.css", rel="stylesheet")
 body
-    .container
-        form.form-searching(name="searchingForm", action="/search", method="get")
-            h2.form-searching-heading Welcome to our site. Search data in the box below to find publications
-            input#searchFor.form-control(type="text", name = "query", placeholder = "search...", required, autofocus)
-            select(name="type")
-                option(value="researchArea") Research area
-                option(value="authorName") Author name
-                option(value="pubYear") Year of the publication
-                option(value="pubTitle") Title of the publication
-                option(value="keyword") Keywords
-                option(value="pubType") Type of the publication
+	.container
+		form.form-searching(name="searchingForm", action="/search", method="get")
+			h2.form-searching-heading Welcome to our site. Search data in the box below to find publications
+			input#searchFor.form-control(type="text", name = "query", placeholder = "search...", required, autofocus)
+			select(name="type")
+				option(value="researchArea") Research area
+				option(value="authorName") Author name
+				option(value="pubYear") Year of the publication
+				option(value="pubTitle") Title of the publication
+				option(value="keyword") Keywords
+				option(value="pubType") Type of the publication
+				option(value="institution") Institution
+				option(value="venue") Venue
+	.container
+		h2 Add publication
+			select(name="type", onchange="location.href = this.value")
+				option(value="") Publication type
+				option(value="/add?type=article") Article
+				option(value="/add?type=inproceedings") Inproceedings
+				option(value="/add?type=proceedings") Proceedings
+				option(value="/add?type=incollection") Incollection
+				option(value="/add?type=book") Book
 

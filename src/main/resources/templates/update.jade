@@ -59,30 +59,37 @@ head
                 button.btn.btn-lg.btn-primary.btn-block(type="submit") Update
         div.form-main
             h1 Authors
-                each auth in data.authors
-                    div
-                        #{auth.name}
-                        form(action="/publication/#{data.publication.ID}/author/remove", method="post")
-                            div
-                                input(name="name", type="hidden", value="#{auth.name}")
-                                button.btn.btn-lg.btn-primary.btn-block(type="submit") [-]
-                        br
-                    if auth.institution.title
-                        h3 #{auth.institution.title}
-                form(action="/publication/#{data.publication.ID}/author/add", method="post")
-                    h2 Name:
-                    input.form-input(name="name", required, style='width: ' + (100 / 2) + '%')
-                    h2 Alias:
-                    input.form-input(name="alias", style='width: ' + (100 / 2) + '%')
-                    h2 Institution:
-                    input.form-input(name="institution", style='width: ' + (100 / 2) + '%')
-                    button.btn.btn-lg.btn-primary.btn-block(type="submit") [+]
+
+            each auth in data.authors
+                div
+                    h2 #{auth.name}
+                    form.form-button(action="/publication/#{data.publication.ID}/author/remove", method="post")
+                        div.butt
+                            input(name="name", type="hidden", value="#{auth.name}")
+                            button.btn.btn-lg.btn-primary.btn-block(type="submit") delete
+                    br
+                if auth.institution.title
+                    h3 #{auth.institution.title}
+        form.form-main(action="/publication/#{data.publication.ID}/author/add", method="post")
+            h2 Name:
+            input(name="name", required)
+            h2 Alias:
+            input(name="alias", required)
+            h2 Institution:
+            input(name="institution", required)
+            div.form-buttons
+                div.butt
+                    button.btn.btn-lg.btn-primary.btn-block(type="submit") add
         div.form-main
             h1 Reference
-                form(action="/publication/#{data.publication.ID}/reference/add", method="post")
-                    input.form-input(name="RefPubID", required, style='width: ' + (100 / 2) + '%', onchange="document.removeReference.RefPubID.value = this.value;")
-                    button.btn.btn-lg.btn-primary.btn-block(type="submit") [+]
-                form(name="removeReference", action="/publication/#{data.publication.ID}/reference/remove", method="post")
-                    input(name="RefPubID", type="hidden")
-                    button.btn.btn-lg.btn-primary.btn-block(type="submit") [-]
+            form(action="/publication/#{data.publication.ID}/reference/add", method="post")
+                input(name="RefPubID", required, style='width: ' + (100 / 2) + '%', onchange="document.removeReference.RefPubID.value = this.value;")
+                div.form-buttons
+                    div.butt
+                        button.btn.btn-lg.btn-primary.btn-block(type="submit") add
+            form(name="removeReference", action="/publication/#{data.publication.ID}/reference/remove", method="post")
+                input(name="RefPubID", type="hidden")
+                div.form-buttons
+                    div.butt
+                        button.btn.btn-lg.btn-primary.btn-block(type="submit") delete
 

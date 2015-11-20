@@ -19,7 +19,8 @@ body
 				option(value="institution") Institution
 				option(value="venue") Venue
 	.container
-		h2 Add publication
+		div.form-searching
+			h2 Add publication
 			select(name="type", onchange="location.href = this.value")
 				option(value="") Publication type
 				option(value="/add?type=article") Article

@@ -8,7 +8,7 @@ head
 body
     .container
         form#loginForm.form-signin(action="/login", method="post", name="login")
-            h2.form-signin-heading Please sign in
+            h1.form-signin-heading Please sign in
             input#inputLogin.form-control(name="username", type="text", placeholder="Username", required, autofocus, onchange="document.register.username.value = this.value;")
             input#inputPassword.form-control(name="password", type="password", placeholder="Password", required, onchange="document.register.password.value = this.value;")
 

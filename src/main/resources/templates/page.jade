@@ -12,8 +12,7 @@ head
 				a.btn.btn-lg.btn-primary.btn-block(href="/search?type=citedBy&query=#{data.publication.ID}") Cited by
 			div.butt
 				a.btn.btn-lg.btn-primary.btn-block(href="/publication/#{data.publication.ID}/update") Update
-			div.butt
-			form(action="/publication/#{data.publication.ID}/delete", method="post")
+			form.butt(action="/publication/#{data.publication.ID}/delete", method="post")
 				input(name="type", value=data.publication.type, type="hidden")
 				button.btn.btn-lg.btn-primary.btn-block(type="submit") Delete
 		div.form-main

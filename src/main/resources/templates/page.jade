@@ -14,7 +14,7 @@ head
 				a.btn.btn-lg.btn-primary.btn-block(href="/publication/#{data.publication.ID}/update") Update
 			form.butt(action="/publication/#{data.publication.ID}/delete", method="post")
 				input(name="type", value=data.publication.type, type="hidden")
-				button.btn.btn-lg.btn-primary.btn-block(type="submit") Delete
+				a.btn.btn-lg.btn-primary.btn-block(type="submit") Delete
 		div.form-main
 			// data - map of the FullInfo
 			h2 #{data.publication.title}

@@ -231,7 +231,7 @@ public class CollectionRetriever {
 
 		ResultSet rs = conn.getRawQueryResult(query);
 		try {
-			while (rs.next()) {
+			if (rs.next()) {
 				Publication publication = new Publication(pubId, rs.getString(1), rs.getInt(2), rs.getString(3));
 				Area a = new Area(rs.getInt(4), rs.getString(5));
 				Keyword keyword = new Keyword(rs.getInt(6), rs.getString(7));
@@ -531,5 +531,18 @@ public class CollectionRetriever {
 				"  \"Author\".\"Name\" = '" + name + "'";
 		List<Object> result = processResult(conn.getRawQueryResult(query), Author.class, 1);
 		return result.size() > 0 ? (Author) result.get(0) : null;
+	}
+
+	public List<Object> getCrossreferenced(String type, String ID) {
+		type = Character.toUpperCase(type.charAt(0)) + type.substring(1);
+		String query = String.format("SELECT \n" +
+				"  \"Publication\".* \n" +
+				"FROM \n" +
+				"  public.\"Publication\", \n" +
+				"  public.\"%1$s\"\n" +
+				"WHERE \n" +
+				"  \"%1$s\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
+				"  \"%1$s\".\"Crossref\" = %2$s;", type, ID);
+		return processResult(conn.getRawQueryResult(query), Publication.class);
 	}
 }

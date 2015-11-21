@@ -5,6 +5,7 @@ import model.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CollectionUpdater {
@@ -273,23 +274,30 @@ public class CollectionUpdater {
 	public void addAreaKeywordPublisher(Map<String, String> params) {
 		String query;
 
+		query = String.format(delete.get("pubArea"), params.get("ID"));
+		conn.executeNonQuery(query);
+
+		query = String.format(delete.get("pubKeyword"), params.get("ID"));
+		conn.executeNonQuery(query);
+
+
+		query = String.format(delete.get("published"), params.get("ID"));
+		conn.executeNonQuery(query);
+
 		if (params.get("area").length() > 0) {
 			Area area = CollectionRetriever.getInstance().getArea(params.get("area"));
 			if (area == null) {
 				area = addArea(params.get("area"));
 			}
-			query = String.format(delete.get("pubArea"), params.get("ID"));
-			conn.executeNonQuery(query);
 			query = String.format(insert.get("pubArea"), params.get("ID"), area.getID());
 			conn.executeNonQuery(query);
 		}
+
 		if (params.get("keyword").length() > 0) {
 			Keyword keyword = CollectionRetriever.getInstance().getKeyword(params.get("keyword"));
 			if (keyword == null) {
 				keyword = addKeyword(params.get("keyword"));
 			}
-			query = String.format(delete.get("pubKeyword"), params.get("ID"));
-			conn.executeNonQuery(query);
 			query = String.format(insert.get("pubKeyword"), params.get("ID"), keyword.getID());
 			conn.executeNonQuery(query);
 		}
@@ -298,8 +306,6 @@ public class CollectionUpdater {
 			if (publisher == null) {
 				publisher = addPublisher(params.get("publisher"));
 			}
-			query = String.format(delete.get("published"), params.get("ID"));
-			conn.executeNonQuery(query);
 			query = String.format(insert.get("published"), params.get("ID"), publisher.getID());
 			conn.executeNonQuery(query);
 		}
@@ -307,9 +313,11 @@ public class CollectionUpdater {
 
 	public void updatePublication(Map<String, String> params) {
 		// Check references
-		params.put("crossref", getReference(params));
-		if (params.get("crossref") == null) {
-			throw new NotFoundException();
+		if (params.get("type").equals("inproceedings") || params.get("type").equals("incollection")) {
+			params.put("crossref", getReference(params));
+			if (params.get("crossref") == null) {
+				throw new NotFoundException();
+			}
 		}
 
 		String query = String.format(update.get("publication"),
@@ -363,6 +371,15 @@ public class CollectionUpdater {
 		conn.executeNonQuery(query);
 		query = String.format(delete.get("published"), ID);
 		conn.executeNonQuery(query);
+		query = String.format(delete.get("referenced").replace("AND", "OR").replace("%s", "%1$s"), ID);
+		conn.executeNonQuery(query);
+		if (type.equals("book") || type.equals("proceedings")) {
+			List<Object> publication = CollectionRetriever.getInstance().getCrossreferenced(type.equals("book") ? "incollection" : "inproceedings", ID);
+			for (Object o : publication) {
+				Publication p = (Publication) o;
+				deletePublication(p.type, Integer.toString(p.ID));
+			}
+		}
 	}
 
 	public void addUser(String name, String pass) {
@@ -481,9 +498,8 @@ public class CollectionUpdater {
 				inst = addInstitution(institution);
 			}
 		}
-		Author auth = CollectionRetriever.getInstance().getAuthor(author);
-		if (auth == null) {
-			auth = addAuthor(author, alias);
+		if (CollectionRetriever.getInstance().getAuthor(author) == null) {
+			addAuthor(author, alias);
 		}
 		String query = String.format(insert.get("instAuthPub"), PubID, inst != null ? inst.getID() : null, author);
 		conn.executeNonQuery(query);

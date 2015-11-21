@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Created by lebdron on 01.11.2015.
- */
 public class Proceedings extends Publication {
     private int conferenceID = 0;
 

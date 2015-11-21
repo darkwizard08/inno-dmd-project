@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Created by lebdron on 01.11.2015.
- */
 public class Incollection extends Publication {
     private int crossref = 0;
     private String pages = "";

@@ -28,6 +28,8 @@ body {
     font-size: 16px;
     font-weight: normal;
     border-spacing: 10px;
+    table-layout: fixed;
+    width: 100%
 }
 
 .form-button {
@@ -40,6 +42,9 @@ body {
     box-sizing: border-box;
     font-size: 16px;
     font-weight: normal;
+    width: auto;
+    display: table-cell;
+    vertical-align: middle;
 }
 
 .form-input {
@@ -51,8 +56,4 @@ body {
     box-sizing: border-box;
     font-size: 16px;
     font-weight: normal;
-}
-.butt {
-    width: auto;
-    display: table-cell;
 }

@@ -6,25 +6,30 @@ head
 	link(href="/info_page.css", rel="stylesheet")
 	body
 		div.form-buttons
-			div.butt
+			div.form-button
 				a.btn.btn-lg.btn-primary.btn-block(href="/search?type=references&query=#{data.publication.ID}") References
-			div.butt
+			div.form-button
 				a.btn.btn-lg.btn-primary.btn-block(href="/search?type=citedBy&query=#{data.publication.ID}") Cited by
-			div.butt
+			div.form-button
 				a.btn.btn-lg.btn-primary.btn-block(href="/publication/#{data.publication.ID}/update") Update
-			form.butt(action="/publication/#{data.publication.ID}/delete", method="post")
-				input(name="type", value=data.publication.type, type="hidden")
-				a.btn.btn-lg.btn-primary.btn-block(type="submit") Delete
+			div.form-button
+				form(action="/publication/#{data.publication.ID}/delete", method="post")
+					input(name="type", value=data.publication.type, type="hidden")
+					button.btn.btn-lg.btn-primary.btn-block(type="submit") Delete
 		div.form-main
 			// data - map of the FullInfo
 			h2 #{data.publication.title}
-			h2 Year: #{data.publication.year}
+			h2 Year:
+			a.h2.btn-link(href="/search?type=pubYear&query=#{data.publication.year}") #{data.publication.year}
 			if data.publisher.name != null
-				h2 Publisher: #{data.publisher.name}
+				h2 Publisher:
+				#{data.publisher.name}
 			if data.area.name != null
-				a.h2.btn-link(href="/search?type=researchArea&query=#{data.area.name}") Area: #{data.area.name}
+				h2 Area:
+				a.h2.btn-link(href="/search?type=researchArea&query=#{data.area.name}") #{data.area.name}
 			if data.word.word != null
-				a.h2.btn-link(href="/search?type=keyword&query=#{data.word.word}") Keyword: #{data.word.word}
+				h2 Keyword:
+				a.h2.btn-link(href="/search?type=keyword&query=#{data.word.word}") #{data.word.word}
 
 			case data.publication.type
 				when "article"
@@ -63,3 +68,4 @@ head
 				br
 				if auth.institution.title
 					a.h3.btn-link(href="/search?type=institution&query=#{auth.institution.title}") #{auth.institution.title}
+					br

@@ -1,95 +1,95 @@
 // Created by kittn on 11/1/15.
 doctype html
 head
-    title #{data.publication.title}
-    link(href="/bootstrap.min.css", rel="stylesheet")
-    link(href="/info_page.css", rel="stylesheet")
-    body
-        form.form-main(action="/publication/#{data.publication.ID}/update", method="post")
-            input(name="ID", value=data.publication.ID, type="hidden")
-            input(name="type", value=data.publication.type, type="hidden")
-            // data - map of the FullInfo
-            div
-                h2 Title:
-                input(name="title", value=data.publication.title, required)
-                h2 Year:
-                input(name="year", value=data.publication.year, required)
-                h2 Publisher:
-                input(name="publisher", value=data.publisher.name)
-                h2 Area:
-                input(name="area", value=data.area.name)
-                h2 Keyword:
-                input(name="keyword", value=data.word.word)
-                case data.publication.type
-                    when "article"
-                        h2 Pages:
-                        input(name="pages", value=data.publication.pages)
-                        h2 Journal title:
-                        input(name="journal", required, value=data.addition.title)
-                        h2 Volume:
-                        input(name="volume", value=data.addition.volume)
-                        h2 Number:
-                        input(name="number", value=data.addition.number)
-                    when "proceedings"
-                        h2 Conference title:
-                        input(name="conference", required, value=data.addition.title)
-                        h2 Volume:
-                        input(name="volume", value=data.addition.volume)
-                    when "inproceedings"
-                        h2 Pages:
-                        input(name="pages", value=data.publication.pages)
-                        h2 Proceedings title:
-                        input(name="proceedings", required, value=data.addition.publication.title)
-                        h2 Proceedings year:
-                        input(name="proceedingsyear", required, value=data.addition.publication.year)
-                    when "incollection"
-                        h2 Pages:
-                        input(name="pages", value=data.publication.pages)
-                        h2 Book title:
-                        input(name="book", required, value=data.addition.publication.title)
-                        h2 Book year:
-                        input(name="bookyear", required, value=data.addition.publication.year)
-                        h2 Book volume:
-                        input(name="volume", value=data.addition.publication.volume)
-                    when "book"
-                        h2 Volume:
-                        input(name="volume", value=data.publication.volume)
+	title #{data.publication.title}
+	link(href="/bootstrap.min.css", rel="stylesheet")
+	link(href="/info_page.css", rel="stylesheet")
+	body
+		form.form-main(action="/publication/#{data.publication.ID}/update", method="post")
+			input(name="ID", value=data.publication.ID, type="hidden")
+			input(name="type", value=data.publication.type, type="hidden")
+			// data - map of the FullInfo
+			div
+				h2 Title:
+				input(name="title", value=data.publication.title, required)
+				h2 Year:
+				input(name="year", value=data.publication.year, required)
+				h2 Publisher:
+				input(name="publisher", value=data.publisher.name)
+				h2 Area:
+				input(name="area", value=data.area.name)
+				h2 Keyword:
+				input(name="keyword", value=data.word.word)
+				case data.publication.type
+					when "article"
+						h2 Pages:
+						input(name="pages", value=data.publication.pages)
+						h2 Journal title:
+						input(name="journal", required, value=data.addition.title)
+						h2 Volume:
+						input(name="volume", value=data.addition.volume)
+						h2 Number:
+						input(name="number", value=data.addition.number)
+					when "proceedings"
+						h2 Conference title:
+						input(name="conference", required, value=data.addition.title)
+						h2 Volume:
+						input(name="volume", value=data.addition.volume)
+					when "inproceedings"
+						h2 Pages:
+						input(name="pages", value=data.publication.pages)
+						h2 Proceedings title:
+						input(name="proceedings", required, value=data.addition.publication.title)
+						h2 Proceedings year:
+						input(name="proceedingsyear", required, value=data.addition.publication.year)
+					when "incollection"
+						h2 Pages:
+						input(name="pages", value=data.publication.pages)
+						h2 Book title:
+						input(name="book", required, value=data.addition.publication.title)
+						h2 Book year:
+						input(name="bookyear", required, value=data.addition.publication.year)
+						h2 Book volume:
+						input(name="volume", value=data.addition.publication.volume)
+					when "book"
+						h2 Volume:
+						input(name="volume", value=data.publication.volume)
 
-            div.form-buttons
-                button.btn.btn-lg.btn-primary.btn-block(type="submit") Update
-        div.form-main
-            h1 Authors
+			div.form-buttons
+				button.btn.btn-lg.btn-primary.btn-block(type="submit") Update
+		div.form-main
+			h1 Authors
 
-            each auth in data.authors
-                div
-                    h2 #{auth.name}
-                    form.form-button(action="/publication/#{data.publication.ID}/author/remove", method="post")
-                        div.butt
-                            input(name="name", type="hidden", value="#{auth.name}")
-                            button.btn.btn-lg.btn-primary.btn-block(type="submit") delete
-                    br
-                if auth.institution.title
-                    h3 #{auth.institution.title}
-        form.form-main(action="/publication/#{data.publication.ID}/author/add", method="post")
-            h2 Name:
-            input(name="name", required)
-            h2 Alias:
-            input(name="alias", required)
-            h2 Institution:
-            input(name="institution", required)
-            div.form-buttons
-                div.butt
-                    button.btn.btn-lg.btn-primary.btn-block(type="submit") add
-        div.form-main
-            h1 Reference
-            form(action="/publication/#{data.publication.ID}/reference/add", method="post")
-                input(name="RefPubID", required, style='width: ' + (100 / 2) + '%', onchange="document.removeReference.RefPubID.value = this.value;")
-                div.form-buttons
-                    div.butt
-                        button.btn.btn-lg.btn-primary.btn-block(type="submit") add
-            form(name="removeReference", action="/publication/#{data.publication.ID}/reference/remove", method="post")
-                input(name="RefPubID", type="hidden")
-                div.form-buttons
-                    div.butt
-                        button.btn.btn-lg.btn-primary.btn-block(type="submit") delete
+			each auth in data.authors
+				div
+					h2 #{auth.name}
+					if auth.institution.title
+						h3 #{auth.institution.title}
+					form.form-button(action="/publication/#{data.publication.ID}/author/remove", method="post")
+						div.butt
+							input(name="name", type="hidden", value="#{auth.name}")
+							button.btn.btn-lg.btn-primary.btn-block(type="submit") delete
+					br
+		form.form-main(action="/publication/#{data.publication.ID}/author/add", method="post")
+			h2 Name:
+			input(name="name", required)
+			h2 Alias:
+			input(name="alias", required)
+			h2 Institution:
+			input(name="institution", required)
+			div.form-buttons
+				div.butt
+					button.btn.btn-lg.btn-primary.btn-block(type="submit") add
+		div.form-main
+			h1 Reference
+			form(action="/publication/#{data.publication.ID}/reference/add", method="post")
+				input(name="RefPubID", required, style='width: ' + (100 / 2) + '%', onchange="document.removeReference.RefPubID.value = this.value;")
+				div.form-buttons
+					div.butt
+						button.btn.btn-lg.btn-primary.btn-block(type="submit") add
+			form(name="removeReference", action="/publication/#{data.publication.ID}/reference/remove", method="post")
+				input(name="RefPubID", type="hidden")
+				div.form-buttons
+					div.butt
+						button.btn.btn-lg.btn-primary.btn-block(type="submit") delete
 

@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Created by lebdron on 01.11.2015.
- */
 public class Book extends Publication {
     public String volume;
 

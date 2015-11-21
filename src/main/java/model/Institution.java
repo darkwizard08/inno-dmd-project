@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Created by lebdron on 02.11.2015.
- */
 public class Institution {
     public int ID;
     public String title;

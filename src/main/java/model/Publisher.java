@@ -9,7 +9,7 @@ public class Publisher {
 
 	public Publisher(int ID, String name) {
 		this.ID = ID;
-		name = name;
+		this.name = name;
 	}
 
 	public int getID() {

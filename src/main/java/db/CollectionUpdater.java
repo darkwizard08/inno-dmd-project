@@ -385,108 +385,68 @@ public class CollectionUpdater {
 		}
 	}
 
+	public String id(String table){
+		return getNewID(table, table + ".id");
+	}
+
+	public int i(String conv) {
+		return Integer.parseInt(conv);
+	}
+
 	public void addUser(String name, String pass) {
-		/*String query = "insert into \"User\"(\"Username\", \"Password\") " +
-				"values ('" + name + "', '" + pass + "')";*/
-		cp.insert("User", getNewID("User", "id"), getNewID("User", "ID"), name, pass);
+		cp.insert("User", id("User"), getNewID("User", "ID"), name, pass);
 	}
 
 	public Journal addJournal(String title, String volume, String number) {
-		try {
-			String query = "insert into \"Journal\"(\"Title\", \"Volume\", \"Number\") " +
-					"values ('" + title + "', "
-					+ (volume.length() == 0 ? "NULL, " : "'" + volume + "', ")
-					+ (number.length() == 0 ? "NULL" : "'" + number + "'") + ") returning \"ID\"";
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			return new Journal(rs.getInt(1), title, volume, number, null);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		int newId = i(getNewID("Journal", "Journal.ID"));
+		cp.init().insert("Journal",
+				id("Journal"), newId + "",
+				title, volume, number);
+
+		return new Journal(newId, title, volume, number, null);
+
 	}
 
 	public Conference addConference(String title, String volume) {
-		try {
-			String query = "insert into \"Conference\"(\"Title\", \"Volume\") " +
-					"values ('" + title + "', " +
-					(volume.length() == 0 ? "NULL, " : "'" + volume + "', ") + ") returning \"ID\"";
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			return new Conference(rs.getInt(1), title, volume);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		int newId = i(getNewID("Conference", "Conference.ID"));
+		cp.init().insert("Conference", id("Conference"), newId + "", title, volume);
+
+		return new Conference(newId, title, volume);
 	}
 
 	public Area addArea(String name) {
-		try {
-			String query = "insert into \"Area\"(\"Name\") " +
-					"values ('" + name + "') returning \"ID\"";
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			return new Area(rs.getInt(1), name);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		int newId = i(getNewID("Area", "Area.ID"));
+		cp.init().insert("Area", id("Area"), newId + "", name);
+
+		return new Area(newId, name);
 	}
 
 	public Keyword addKeyword(String word) {
-		try {
-			String query = "insert into \"Keyword\"(\"Word\") " +
-					"values ('" + word + "') returning \"ID\"";
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			return new Keyword(rs.getInt(1), word);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		int newId = i(getNewID("Keyword", "Keyword.ID"));
+		cp.init().insert("Keyword", id("Keyword"), newId + "", word);
+
+		return new Keyword(newId, word);
 	}
 
 	public Institution addInstitution(String title) {
-		try {
-			String query = "insert into \"Institution\"(\"Title\") " +
-					"values ('" + title + "') returning \"ID\"";
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			return new Institution(rs.getInt(1), title);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		int newId = i(getNewID("Institution", "Institution.ID"));
+		cp.init().insert("Institution", id("Institution"), newId + "", title);
+
+		return new Institution(newId, title);
 	}
 
 	public Publisher addPublisher(String name) {
-		try {
-			String query = "insert into \"Publisher\"(\"Name\") " +
-					"values ('" + name + "') returning \"ID\"";
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			return new Publisher(rs.getInt(1), name);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		int newId = i(getNewID("Publisher", "Publisher.ID"));
+		cp.init().insert("Publisher", id("Publisher"), newId + "", name);
+
+		return new Publisher(newId, name);
 	}
 
 	public Author addAuthor(String name, String alias) {
-		try {
-			Author auth = null;
-			if (alias.length() > 0) {
-				auth = CollectionRetriever.getInstance().getAuthor(alias);
-			}
-			String query = "insert into \"Author\"(" + (auth != null ? "\"ID\", " : "") + "\"Name\") " +
-					"values (" + (auth != null ? auth.getID() + ", " : "") + "'" + name + "') returning \"ID\"";
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			return new Author(rs.getInt(1), name);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+		int newId = i(getNewID("Author", "Author.ID"));
+		cp.init().insert("Author", id("Author"), newId + "", name);
+
+		return new Author(newId, name);
 	}
 
 	public void addInstAuthPub(String author, String alias, String institution, String PubID) {
@@ -494,9 +454,11 @@ public class CollectionUpdater {
 			return;
 		}
 		Institution inst = null;
+
 		if (institution.length() > 0) {
 			inst = CollectionRetriever.getInstance()
 					.getInstitution(institution);
+
 			if (inst == null) {
 				inst = addInstitution(institution);
 			}
@@ -504,30 +466,30 @@ public class CollectionUpdater {
 		if (CollectionRetriever.getInstance().getAuthor(author) == null) {
 			addAuthor(author, alias);
 		}
-		String query = String.format(insert.get("instAuthPub"), PubID, inst != null ? inst.getID() : null, author);
-		conn.executeNonQuery(query);
+
+		cp.init().insert("InstAuthPub", id("InstAuthPub"),
+				getNewID("InstAuthPub", "PubID"), inst.getID() + "", author);
 	}
 
 	public void deleteInstAuthPub(String author, String PubID) {
-		String query = "DELETE\n" +
-				"FROM \n" +
-				"  public.\"InstAuthPub\"\n" +
-				"WHERE \n" +
-				"  \"InstAuthPub\".\"PubID\" = " + PubID + " AND \n" +
-				"  \"InstAuthPub\".\"Author\" = '" + author + "'";
-		conn.executeNonQuery(query);
+		cp.init().scan("InstAuthPub")
+				.filter("InstAuthPub.PubID = " + PubID)
+				.filter("InstAuthPub.Author = " + author)
+				.delete("InstAuthPub");
 	}
 
 	public void addReference(String PubID, String RefPubID) {
 		if (CollectionRetriever.getInstance().getFullPublicationInfo(Integer.parseInt(RefPubID)) != null) {
-			String query = String.format(insert.get("referenced"), PubID, RefPubID);
-			conn.executeNonQuery(query);
+			cp.init().insert("Referenced", getNewID("Referenced", "id"), getNewID("Referenced", "PubID"), RefPubID);
+
 		}
 	}
 
 	public void deleteReference(String PubID, String RefPubID) {
-		String query = String.format(delete.get("referenced"), PubID, RefPubID);
-		conn.executeNonQuery(query);
+		cp.init().scan("Referenced")
+				.filter("Referenced.PubID = " + PubID)
+				.filter("Referenced.RefPubID = " + RefPubID)
+				.delete("Referenced");
 	}
 
 	public String getNewID(String table, String attribute) {

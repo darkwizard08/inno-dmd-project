@@ -4,6 +4,7 @@
 
 import db.NotFoundException;
 import model.User;
+import phase3.CommandProcessor;
 import spark.ModelAndView;
 import spark.Request;
 import spark.template.jade.JadeTemplateEngine;
@@ -14,6 +15,7 @@ import static spark.Spark.*;
 
 public class Runner {
 	private static final String USER_SESSION_ID = "user";
+	private static final CommandProcessor cp = new CommandProcessor();
 
 	public static void main(String[] args) {
 		new Runner().run();
@@ -62,6 +64,12 @@ public class Runner {
 		exception(NotFoundException.class, (e, request, response) -> {
 			response.status(404);
 			response.body("Resource not found");
+		});
+
+		get("/stop", (request, response) -> {
+			cp.close();
+			stop();
+			return null;
 		});
 	}
 

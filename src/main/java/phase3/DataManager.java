@@ -11,7 +11,7 @@ import java.util.List;
 
 
 class DataManager {
-	private StorageManager storage = new StorageManager();
+	private StorageManager storage = StorageManager.getInstance();
 
 	public DataManager() {
 

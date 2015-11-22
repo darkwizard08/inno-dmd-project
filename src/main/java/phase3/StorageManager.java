@@ -14,6 +14,7 @@ import java.util.Map;
 
 
 public class StorageManager {
+	private static StorageManager manager = null;
 	//connector to the file for reading
 	private RandomAccessFile storage;
 	//list of free spaces in the file
@@ -23,7 +24,7 @@ public class StorageManager {
 	/**
 	 * constructor to initialize the Manager
 	 */
-	public StorageManager() {
+	private StorageManager() {
 		File customDB = new File(".db");
 		try {
 			this.storage = new RandomAccessFile(customDB, "rw");
@@ -60,6 +61,13 @@ public class StorageManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static StorageManager getInstance() {
+		if (manager == null) {
+			manager = new StorageManager();
+		}
+		return manager;
 	}
 
 	/**

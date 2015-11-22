@@ -72,6 +72,10 @@ public class Tuple implements Writable {
 		throw new Error("looked through all keys, but no match :(");
 	}
 
+	public String get(int i) {
+		return (String) this.attributes.values().toArray()[i];
+	}
+
 	public void set(String key, String value) {
 		this.attributes.put(key, value);
 	}

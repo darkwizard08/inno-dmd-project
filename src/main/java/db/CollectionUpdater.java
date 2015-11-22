@@ -1,6 +1,8 @@
 package db;
 
 import model.*;
+import phase3.CommandProcessor;
+import phase3.model.tuple.Tuple;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,9 +14,10 @@ public class CollectionUpdater {
 	private static CollectionUpdater updtr = null;
 	private final HashMap<String, String> update, delete, insert;
 	private DBConnector conn = null;
+	private CommandProcessor cp;
 
 	private CollectionUpdater() {
-		this.conn = DBConnector.getInstance();
+		this.cp = new CommandProcessor();
 		update = new HashMap<>();
 		delete = new HashMap<>();
 		insert = new HashMap<>();
@@ -383,9 +386,9 @@ public class CollectionUpdater {
 	}
 
 	public void addUser(String name, String pass) {
-		String query = "insert into \"User\"(\"Username\", \"Password\") " +
-				"values ('" + name + "', '" + pass + "')";
-		conn.executeNonQuery(query);
+		/*String query = "insert into \"User\"(\"Username\", \"Password\") " +
+				"values ('" + name + "', '" + pass + "')";*/
+		cp.insert("User", getNewID("User", "id"), getNewID("User", "ID"), name, pass);
 	}
 
 	public Journal addJournal(String title, String volume, String number) {
@@ -525,5 +528,13 @@ public class CollectionUpdater {
 	public void deleteReference(String PubID, String RefPubID) {
 		String query = String.format(delete.get("referenced"), PubID, RefPubID);
 		conn.executeNonQuery(query);
+	}
+
+	public String getNewID(String table, String attribute) {
+		List<Tuple> res = cp.scan(table)
+				.sort(attribute, "DESC")
+				.limit(1)
+				.list();
+		return res.size() == 1 ? (Integer.parseInt(res.get(0).get(attribute)) + 1) + "" : 1 + "";
 	}
 }

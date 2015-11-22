@@ -207,8 +207,6 @@ public class CollectionRetriever {
 		List<Tuple> instAuthPub = cp.scan("InstAuthPub").list(),
 				institution = cp.scan("Institution").list();
 
-		CommandProcessor counter = new CommandProcessor();
-
 		switch (searchType) {
 			case "researchArea":
 				List<Tuple> area = cp.scan("Area")
@@ -220,25 +218,14 @@ public class CollectionRetriever {
 						.join(pubArea, "Publication.ID", "PubArea.PubID", "INNER")
 						.join(area, "PubArea.AreaID", "Area.ID", "INNER")
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
-				counter.scan("Publication")
-						.join(pubArea, "Publication.ID", "PubArea.PubID", "INNER")
-						.join(area, "PubArea.AreaID", "Area.ID", "INNER")
-						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
-						.count("*");
 				break;
 			case "pubYear":
 				cp.scan("Publication")
 						.filter("Publication.Year = " + searchFor);
-				counter.scan("Publication")
-						.filter("Publication.Year = " + searchFor)
-						.count("*");
 				break;
 			case "pubTitle":
 				cp.scan("Publication")
 						.filter("Publication.Title");
-				counter.scan("Publication")
-						.filter("Publication.Title")
-						.count("*");
 				break;
 			case "keyword":
 				List<Tuple> keyword = cp.scan("Keyword")
@@ -250,21 +237,12 @@ public class CollectionRetriever {
 						.join(pubKeyword, "Publication.ID", "PubKeyword.PubID", "INNER")
 						.join(keyword, "PubKeyword.KeywordID", "Keyword.ID", "INNER")
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
-				counter.scan("Publication")
-						.join(pubKeyword, "Publication.ID", "PubKeyword.PubID", "INNER")
-						.join(keyword, "PubKeyword.KeywordID", "Keyword.ID", "INNER")
-						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
-						.count("*");
 				break;
 			case "pubType":
 				List<Tuple> type = cp.scan(searchFor).list();
 				cp.scan("Publication")
 						.join(type, "Publication.ID", searchFor + ".ID", "INNER")
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
-				counter.scan("Publication")
-						.join(type, "Publication.ID", searchFor + ".ID", "INNER")
-						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
-						.count("*");
 				break;
 			case "references":
 				List<Tuple> referenced = cp.scan("Referenced")
@@ -273,10 +251,6 @@ public class CollectionRetriever {
 				cp.scan("Publication")
 						.join(referenced, "Publication.ID", "Referenced.RefPubID", "INNER")
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
-				counter.scan("Publication")
-						.join(referenced, "Publication.ID", "Referenced.RefPubID", "INNER")
-						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
-						.count("*");
 				break;
 			case "citedBy":
 				referenced = cp.scan("Referenced")
@@ -285,15 +259,10 @@ public class CollectionRetriever {
 				cp.scan("Publication")
 						.join(referenced, "Publication.ID", "Referenced.PubID", "INNER")
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
-				counter.scan("Publication")
-						.join(referenced, "Publication.ID", "Referenced.PubID", "INNER")
-						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
-						.count("*");
 				break;
 		}
 
-		cp.join(counter.list(), null, null, "CROSS")
-				.offset(Integer.parseInt(offset))
+		cp.count("*").offset(Integer.parseInt(offset))
 				.limit(50);
 
 		List<Object> result = this.processResult(cp.list(), PublicationSearchResult.class);
@@ -435,8 +404,8 @@ public class CollectionRetriever {
 						"WHERE \n" +
 						"   \"InstAuthPub\".\"PubID\" = " + pubId + ";";
 				if (result != null) {
-					List<Object> authors = this.processResult(conn.getRawQueryResult(query), Author.class);
-					result.setAuthors(authors);
+					//List<Object> authors = this.processResult(conn.getRawQueryResult(query), Author.class);
+					//result.setAuthors(authors);
 				}
 				return result;
 			}
@@ -492,8 +461,9 @@ public class CollectionRetriever {
 				"  \"Journal\".\"Title\" = '" + title + "' AND \n" +
 				"  \"Journal\".\"Volume\" = '" + volume + "' AND \n" +
 				"  \"Journal\".\"Number\" = '" + number + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Journal.class);
-		return result.size() > 0 ? (Journal) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Journal.class);
+		//return result.size() > 0 ? (Journal) result.get(0) : null;
+		return null;
 	}
 
 	public Conference getConference(String title, String volume) {
@@ -504,8 +474,9 @@ public class CollectionRetriever {
 				"WHERE \n" +
 				"  \"Conference\".\"Title\" = '" + title + "' AND \n" +
 				"  \"Conference\".\"Volume\" = '" + volume + "'\n";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Conference.class);
-		return result.size() > 0 ? (Conference) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Conference.class);
+		//return result.size() > 0 ? (Conference) result.get(0) : null;
+		return null;
 	}
 
 	public Book getBook(String title, String year, String volume) {
@@ -522,8 +493,9 @@ public class CollectionRetriever {
 				"  \"Publication\".\"Title\" = '" + title + "' AND \n" +
 				"  \"Publication\".\"Year\" = " + year + " AND \n" +
 				"  \"Book\".\"Volume\" = '" + volume + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Book.class);
-		return result.size() > 0 ? (Book) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Book.class);
+		//return result.size() > 0 ? (Book) result.get(0) : null;
+		return null;
 	}
 
 	public Proceedings getProceedings(String title, String year) {
@@ -539,8 +511,9 @@ public class CollectionRetriever {
 				"  \"Book\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
 				"  \"Publication\".\"Title\" = '" + title + "' AND \n" +
 				"  \"Publication\".\"Year\" = " + year;
-		List<Object> result = processResult(conn.getRawQueryResult(query), Proceedings.class);
-		return result.size() > 0 ? (Proceedings) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Proceedings.class);
+		//return result.size() > 0 ? (Proceedings) result.get(0) : null;
+		return null;
 	}
 
 	public Area getArea(String name) {
@@ -550,8 +523,9 @@ public class CollectionRetriever {
 				"  public.\"Area\"\n" +
 				"WHERE \n" +
 				"  \"Area\".\"Name\" = '" + name + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Area.class);
-		return result.size() > 0 ? (Area) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Area.class);
+		//return result.size() > 0 ? (Area) result.get(0) : null;
+		return null;
 	}
 
 	public Keyword getKeyword(String word) {
@@ -561,8 +535,9 @@ public class CollectionRetriever {
 				"  public.\"Keyword\"\n" +
 				"WHERE \n" +
 				"  \"Keyword\".\"Word\" = '" + word + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Keyword.class);
-		return result.size() > 0 ? (Keyword) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Keyword.class);
+		//return result.size() > 0 ? (Keyword) result.get(0) : null;
+		return null;
 	}
 
 	public Institution getInstitution(String title) {
@@ -572,8 +547,9 @@ public class CollectionRetriever {
 				"  public.\"Institution\"\n" +
 				"WHERE \n" +
 				"  \"Institution\".\"Title\" = '" + title + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Institution.class);
-		return result.size() > 0 ? (Institution) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Institution.class);
+		//return result.size() > 0 ? (Institution) result.get(0) : null;
+		return null;
 	}
 
 	public Publisher getPublisher(String name) {
@@ -583,8 +559,9 @@ public class CollectionRetriever {
 				"  public.\"Publisher\"\n" +
 				"WHERE \n" +
 				"  \"Publisher\".\"Name\" = '" + name + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Publisher.class);
-		return result.size() > 0 ? (Publisher) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Publisher.class);
+		//return result.size() > 0 ? (Publisher) result.get(0) : null;
+		return null;
 	}
 
 	public Author getAuthor(String name) {
@@ -594,8 +571,9 @@ public class CollectionRetriever {
 				"  public.\"Author\"\n" +
 				"WHERE \n" +
 				"  \"Author\".\"Name\" = '" + name + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Author.class, 1);
-		return result.size() > 0 ? (Author) result.get(0) : null;
+		//List<Object> result = processResult(conn.getRawQueryResult(query), Author.class, 1);
+		//return result.size() > 0 ? (Author) result.get(0) : null;
+		return null;
 	}
 
 	public List<Object> getCrossreferenced(String type, String ID) {
@@ -608,6 +586,7 @@ public class CollectionRetriever {
 				"WHERE \n" +
 				"  \"%1$s\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
 				"  \"%1$s\".\"Crossref\" = %2$s;", type, ID);
-		return processResult(conn.getRawQueryResult(query), Publication.class);
+		//return processResult(conn.getRawQueryResult(query), Publication.class);
+		return null;
 	}
 }

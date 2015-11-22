@@ -1,6 +1,8 @@
 package db;
 
 import model.*;
+import phase3.CommandProcessor;
+import phase3.model.tuple.Tuple;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -15,11 +17,9 @@ public class CollectionRetriever {
 	private final String limitOffset = "\nLIMIT %s\n" +
 			"OFFSET %s", orderBy = "\nORDER BY %s %s";
 	private final HashSet<String> types;
-	private DBConnector conn = null;
+	private CommandProcessor cp = new CommandProcessor();
 
 	private CollectionRetriever() {
-		this.conn = DBConnector.getInstance();
-		this.conn.connect();
 		this.queries = new HashMap<>();
 		this.orderings = new HashMap<>();
 		this.sortings = new HashMap<>();
@@ -207,35 +207,38 @@ public class CollectionRetriever {
 		return result.size() == 0 ? null : result;
 	}
 
-	public FullInfo getFullPublicationInfo(int pubId) {
-		String query = "SELECT \n" +
-				"  \"Publication\".\"Title\", \n" +
-				"  \"Publication\".\"Year\", \n" +
-				"  \"Publication\".\"Type\", \n" +
-				"  \"Area\".\"ID\", \n" +
-				"  \"Area\".\"Name\", \n" +
-				"  \"Keyword\".\"ID\", \n" +
-				"  \"Keyword\".\"Word\", \n" +
-				"  \"Publisher\".\"ID\", \n" +
-				"  \"Publisher\".\"Name\" \n" +
-				"FROM \n" +
-				"  public.\"Publication\"\n" +
-				"    LEFT OUTER JOIN public.\"PubArea\" ON (\"PubArea\".\"PubID\" = \"Publication\".\"ID\") \n" +
-				"    LEFT OUTER JOIN public.\"PubKeyword\" ON (\"PubKeyword\".\"PubID\" = \"Publication\".\"ID\") \n" +
-				"    LEFT OUTER JOIN public.\"Area\" ON (\"PubArea\".\"AreaID\" = \"Area\".\"ID\")\n" +
-				"    LEFT OUTER JOIN public.\"Keyword\" ON (\"PubKeyword\".\"KeywordID\" = \"Keyword\".\"ID\")\n" +
-				"    LEFT OUTER JOIN public.\"Published\" ON (\"Published\".\"PublicationID\" = \"Publication\".\"ID\")\n" +
-				"    LEFT OUTER JOIN public.\"Publisher\" ON (\"Published\".\"PublisherID\" = \"Publisher\".\"ID\")\n" +
-				"WHERE \n" +
-				"  \"Publication\".\"ID\" = " + pubId + ";";
+	public int i(String conv) {
+		return Integer.parseInt(conv);
+	}
 
-		ResultSet rs = conn.getRawQueryResult(query);
-		try {
-			if (rs.next()) {
-				Publication publication = new Publication(pubId, rs.getString(1), rs.getInt(2), rs.getString(3));
-				Area a = new Area(rs.getInt(4), rs.getString(5));
-				Keyword keyword = new Keyword(rs.getInt(6), rs.getString(7));
-				Publisher publisher = new Publisher(rs.getInt(8), rs.getString(9));
+	public FullInfo getFullPublicationInfo(int pubId) {
+		List<Tuple> area = this.cp.init().scan("Area").list();
+		List<Tuple> keyw = this.cp.init().scan("Keyword").list();
+		List<Tuple> publ = this.cp.init().scan("Publisher").list();
+		List<Tuple> published = this.cp.init().scan("Published").list();
+		List<Tuple> pubarea = this.cp.init().scan("PubArea").list();
+		List<Tuple> pubkeyw = this.cp.init().scan("PubKeyword").list();
+
+		List<Tuple> res = cp.init().scan("Publication")
+				.join(pubarea, "Publication.ID", "PubArea.PubID", "LEFT OUTER")
+				.join(pubkeyw, "Publication.ID", "PubKeyword.PubID", "LEFT OUTER")
+				.join(area, "PubArea.ID", "Area.ID", "LEFT OUTER")
+				.join(keyw, "PubKeyword.KeywordID", "Keyword.ID", "LEFT OUTER")
+				.join(published, "Publication.ID", "Published.PublicationID", "LEFT OUTER")
+				.join(publ, "Publisher.ID", "Published.PublisherID", "LEFT OUTER")
+				.filter("Publication.ID = " + pubId)
+				.list();
+
+			for (Tuple tp : res) {
+				Publication publication = new Publication(
+						Integer.parseInt(tp.get("Publication.ID")),
+						tp.get("Publication.title"),
+						Integer.parseInt(tp.get("Publication.Year")),
+						tp.get("Publication.Type")
+				);
+				Area a = new Area(Integer.parseInt(tp.get("Area.ID")), tp.get("Area.Name"));
+				Keyword keyword = new Keyword(Integer.parseInt(tp.get("Keyword.ID")), tp.get("Keyword.word"));
+				Publisher publisher = new Publisher(i(tp.get("Publisher.ID")), tp.get("Publisher.Name"));
 
 				ResultSet rs2;
 				FullInfo result = null;
@@ -254,6 +257,16 @@ public class CollectionRetriever {
 								"WHERE \n" +
 								"  \"Article\".\"JournalID\" = \"Journal\".\"ID\" AND\n" +
 								"  \"Article\".\"PubID\" = " + pubId + ";\n";
+
+						List<Tuple> articles = cp.init()
+								.scan("Article")
+								.filter("Article.PubID = " + pubId)
+								.list();
+
+						List<Tuple> journal = cp.init()
+								.scan("Journal")
+								.join(articles, "Journal.ID", "Article.JournalID", "INNER")
+								.list();
 
 						rs2 = conn.getRawQueryResult(query);
 						while (rs2.next()) {
@@ -347,9 +360,6 @@ public class CollectionRetriever {
 				}
 				return result;
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 
 		return null;
 	}

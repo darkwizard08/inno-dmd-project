@@ -216,7 +216,7 @@ public class CommandProcessor {
 	}
 
 	public CommandProcessor limit(int size) {
-		this.resultSet = this.resultSet.subList(0, size);
+		this.resultSet = this.resultSet.subList(0, this.resultSet.size() < size ? this.resultSet.size() : size);
 		return this;
 	}
 

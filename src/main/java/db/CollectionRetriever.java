@@ -5,11 +5,9 @@ import phase3.CommandProcessor;
 import phase3.model.tuple.Tuple;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class CollectionRetriever {
 	private static CollectionRetriever retr = null;
@@ -17,9 +15,12 @@ public class CollectionRetriever {
 	private final String limitOffset = "\nLIMIT %s\n" +
 			"OFFSET %s", orderBy = "\nORDER BY %s %s";
 	private final HashSet<String> types;
-	private CommandProcessor cp = new CommandProcessor();
+
+	private final CommandProcessor cp;
+	private DBConnector conn = null;
 
 	private CollectionRetriever() {
+		this.cp = new CommandProcessor();
 		this.queries = new HashMap<>();
 		this.orderings = new HashMap<>();
 		this.sortings = new HashMap<>();
@@ -192,7 +193,7 @@ public class CollectionRetriever {
 			searchFor = Character.toUpperCase(searchFor.charAt(0)) + searchFor.substring(1);
 		}
 
-		String query = String.format(queries.get(searchType), searchFor, offset);
+		/*String query = String.format(queries.get(searchType), searchFor, offset);
 		query = new StringBuffer(
 				query)
 				.insert(query.indexOf("WHERE"), sortings.get(sortType))
@@ -202,9 +203,107 @@ public class CollectionRetriever {
 						" count.count") +
 				(sortType != null ? String.format(orderBy, orderings.get(sortType), orderType.toUpperCase()) : String.format(orderBy, "\"Publication\".\"ID\"", "ASC")) +
 				String.format(limitOffset, "50", offset);
+<<<<<<< HEAD
 		//ResultSet rs = conn.getRawQueryResult(query);
 		//List<Object> result = this.processResult(rs, PublicationSearchResult.class);
 		return null;
+=======
+		ResultSet rs = conn.getRawQueryResult(query);
+		List<Object> result = this.processResult(rs, PublicationSearchResult.class);*/
+		List<Tuple> instAuthPub = cp.scan("InstAuthPub").list(),
+				institution = cp.scan("Institution").list();
+
+		CommandProcessor counter = new CommandProcessor();
+
+		switch (searchType) {
+			case "researchArea":
+				List<Tuple> area = cp.scan("Area")
+						.filter("Area.Name = " + searchFor)
+						.list(),
+						pubArea = cp.scan("PubArea")
+								.list();
+				cp.scan("Publication")
+						.join(pubArea, "Publication.ID", "PubArea.PubID", "INNER")
+						.join(area, "PubArea.AreaID", "Area.ID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
+				counter.scan("Publication")
+						.join(pubArea, "Publication.ID", "PubArea.PubID", "INNER")
+						.join(area, "PubArea.AreaID", "Area.ID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
+						.count("*");
+				break;
+			case "pubYear":
+				cp.scan("Publication")
+						.filter("Publication.Year = " + searchFor);
+				counter.scan("Publication")
+						.filter("Publication.Year = " + searchFor)
+						.count("*");
+				break;
+			case "pubTitle":
+				cp.scan("Publication")
+						.filter("Publication.Title");
+				counter.scan("Publication")
+						.filter("Publication.Title")
+						.count("*");
+				break;
+			case "keyword":
+				List<Tuple> keyword = cp.scan("Keyword")
+						.filter("Keyword.Word = " + searchFor)
+						.list(),
+						pubKeyword = cp.scan("PubKeyword")
+								.list();
+				cp.scan("Publication")
+						.join(pubKeyword, "Publication.ID", "PubKeyword.PubID", "INNER")
+						.join(keyword, "PubKeyword.KeywordID", "Keyword.ID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
+				counter.scan("Publication")
+						.join(pubKeyword, "Publication.ID", "PubKeyword.PubID", "INNER")
+						.join(keyword, "PubKeyword.KeywordID", "Keyword.ID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
+						.count("*");
+				break;
+			case "pubType":
+				List<Tuple> type = cp.scan(searchFor).list();
+				cp.scan("Publication")
+						.join(type, "Publication.ID", searchFor + ".ID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
+				counter.scan("Publication")
+						.join(type, "Publication.ID", searchFor + ".ID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
+						.count("*");
+				break;
+			case "references":
+				List<Tuple> referenced = cp.scan("Referenced")
+						.filter("Referenced.PubID = " + searchFor)
+						.list();
+				cp.scan("Publication")
+						.join(referenced, "Publication.ID", "Referenced.RefPubID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
+				counter.scan("Publication")
+						.join(referenced, "Publication.ID", "Referenced.RefPubID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
+						.count("*");
+				break;
+			case "citedBy":
+				referenced = cp.scan("Referenced")
+						.filter("Referenced.RefPubID = " + searchFor)
+						.list();
+				cp.scan("Publication")
+						.join(referenced, "Publication.ID", "Referenced.PubID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
+				counter.scan("Publication")
+						.join(referenced, "Publication.ID", "Referenced.PubID", "INNER")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
+						.count("*");
+				break;
+		}
+
+		cp.join(counter.list(), null, null, "CROSS")
+				.offset(Integer.parseInt(offset))
+				.limit(50);
+
+		List<Object> result = this.processResult(cp.list(), PublicationSearchResult.class);
+		return result.size() == 0 ? null : result;
 	}
 
 	public int i(String conv) {
@@ -378,58 +477,27 @@ public class CollectionRetriever {
 		List<Object> answer = new LinkedList<>();
 
 		try {
-			for (Tuple res : result) {
+			for (Tuple t : result) {
 				Constructor c = collectionOf.getDeclaredConstructors()[constID];
 				Object[] array = new Object[c.getParameterCount()];
 				for (int i = 0; i < c.getParameterCount(); ++i)
 					array[i] = ("" + c.getParameterTypes()[i].getSimpleName()).compareTo("int") == 0
-							? i(res.get(i)) : res.get(i);
+							? Integer.parseInt(t.get(i + 1)) : t.get(i + 1);
+
 				Object instance = c.newInstance(array);
 
 				answer.add(instance);
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		return answer;
 	}
 
-	public List<Object> getCollection(Class<?> collectionOf, String searchFor) {
-		// getting relation in which we will search, and generating query pattern
-		String relationName = collectionOf.getSimpleName();
-		String sqlQuery = "select * from \"" + relationName + "\" where ";
-
-		// this string will be executed on every field of the class
-		String likeBuilder = " LIKE '%" + searchFor + "%'";
-
-		// generating list of attributes of the relation
-		String attributesComparison = Arrays.asList(collectionOf.getDeclaredFields())
-				.stream()
-				.map(Field::getName)
-				.map(name -> Character.toUpperCase(name.charAt(0)) + name.substring(1))
-				.map(upperName -> "\"" + upperName + "\"")
-				.map(enclosed -> enclosed + "::char(255)")
-				.map(elem -> elem + likeBuilder)
-				.collect(Collectors.joining(" OR "));
-
-		System.out.println(attributesComparison);
-
-		// final query is here
-		sqlQuery += attributesComparison;
-		//ResultSet result = conn.getRawQueryResult(sqlQuery);
-
-		//return this.processResult(result, collectionOf);
-		return new ArrayList<>();
-	}
-
 	public User getUser(String name) {
-		List<Tuple> result = cp.init()
-				.scan("User")
-				.filter("User.Username = " + name)
-				.list();
-		return result.size() > 0 ? (User) processResult(result, User.class).get(0) : null;
+		List<Tuple> res = cp.scan("User").filter("User.Username = " + name).list();
+		List<Object> result = processResult(res, User.class);
+		return result.size() > 0 ? (User) result.get(0) : null;
 	}
 
 	public Journal getJournal(String title, String volume, String number) {

@@ -202,9 +202,9 @@ public class CollectionRetriever {
 						" count.count") +
 				(sortType != null ? String.format(orderBy, orderings.get(sortType), orderType.toUpperCase()) : String.format(orderBy, "\"Publication\".\"ID\"", "ASC")) +
 				String.format(limitOffset, "50", offset);
-		ResultSet rs = conn.getRawQueryResult(query);
-		List<Object> result = this.processResult(rs, PublicationSearchResult.class);
-		return result.size() == 0 ? null : result;
+		//ResultSet rs = conn.getRawQueryResult(query);
+		//List<Object> result = this.processResult(rs, PublicationSearchResult.class);
+		return null;
 	}
 
 	public int i(String conv) {
@@ -244,19 +244,6 @@ public class CollectionRetriever {
 				FullInfo result = null;
 				switch (publication.getType()) {
 					case "article":
-						query = "SELECT \n" +
-								"  \"Journal\".\"ID\", \n" +
-								"  \"Journal\".\"Title\", \n" +
-								"  \"Journal\".\"Volume\", \n" +
-								"  \"Journal\".\"Number\", \n" +
-								"  \"Journal\".\"Name\", \n" +
-								"  \"Article\".\"Pages\"\n" +
-								"FROM \n" +
-								"  public.\"Article\", \n" +
-								"  public.\"Journal\"\n" +
-								"WHERE \n" +
-								"  \"Article\".\"JournalID\" = \"Journal\".\"ID\" AND\n" +
-								"  \"Article\".\"PubID\" = " + pubId + ";\n";
 
 						List<Tuple> articles = cp.init()
 								.scan("Article")
@@ -266,97 +253,116 @@ public class CollectionRetriever {
 						List<Tuple> journal = cp.init()
 								.scan("Journal")
 								.join(articles, "Journal.ID", "Article.JournalID", "INNER")
+								.project("Journal.ID","Journal.Title","Journal.Volume","Journal.Number", "Journal.Name", "Article.Pages")
 								.list();
 
-						rs2 = conn.getRawQueryResult(query);
-						while (rs2.next()) {
-							Journal j = new Journal(rs2.getInt(1), rs2.getString(2), rs2.getString(3), rs2.getString(4), rs2.getString(5));
-							Article art = new Article(publication, j.getJournalID(), rs2.getString(6));
+						for (Tuple jour : journal) {
+							Journal j = new Journal(
+									i(jour.get("Journal.ID")),
+									jour.get("Journal.Title"),
+									jour.get("Journal.Volume"),
+									jour.get("Journal.Number"),
+									jour.get("Journal.Name")
+							);
+							Article art = new Article(publication, j.getJournalID(), jour.get("Article.Pages"));
 							result = new FullInfo(art, a, keyword, publisher);
 							result.setAddition(j);
 						}
 						break;
 					case "proceedings":
-						query = "SELECT \n" +
-								"  \"Conference\".\"ID\", \n" +
-								"  \"Conference\".\"Title\", \n" +
-								"  \"Conference\".\"Volume\"\n" +
-								"FROM \n" +
-								"  public.\"Proceedings\", \n" +
-								"  public.\"Conference\"\n" +
-								"WHERE \n" +
-								"  \"Proceedings\".\"ConferenceID\" = \"Conference\".\"ID\" AND\n" +
-								"  \"Proceedings\".\"PubID\" = " + pubId + ";\n";
 
-						rs2 = conn.getRawQueryResult(query);
-						while (rs2.next()) {
-							Conference j = new Conference(rs2.getInt(1), rs2.getString(2), rs2.getString(3));
-							Proceedings proc = new Proceedings(publication, j.getConferenceID());
-							result = new FullInfo(proc, a, keyword, publisher);
+						List<Tuple> proc = cp.init()
+								.scan("Proceedings")
+								.filter("Proceedings.PubID = " + pubId)
+								.list();
+
+						List<Tuple> conf = cp.init()
+								.scan("Conference")
+								.join(proc, "Conference.ID", "Proceedings.ConferenceID", "INNER")
+								.project("Conference.ID", "Conference.Title", "Conference.Volume")
+								.list();
+
+						for (Tuple c : conf) {
+							Conference j = new Conference(
+									i(c.get("Conference.ID")),
+									c.get("Conference.Title"),
+									c.get("Conference.Volume")
+							);
+							Proceedings p = new Proceedings(publication, j.getConferenceID());
+							result = new FullInfo(p, a, keyword, publisher);
 							result.setAddition(j);
 						}
 						break;
-					case "inproceedings":
-						query = "SELECT \n" +
-								"  \"Inproceedings\".\"Crossref\"\n" +
-								"  \"Inproceedings\".\"Pages\", \n" +
-								"FROM \n" +
-								"  public.\"Inproceedings\"\n" +
-								"WHERE \n" +
-								"  \"Inproceedings\".\"PubID\" = " + pubId + ";";
 
-						rs2 = conn.getRawQueryResult(query);
-						while (rs2.next()) {
-							Inproceedings inproc = new Inproceedings(publication, rs2.getInt(1), rs2.getString(2));
-							result = new FullInfo(inproc, a, keyword, publisher);
-							result.setAddition(getFullPublicationInfo(rs2.getInt(1)));
+					case "inproceedings":
+
+						List<Tuple> inproc = cp.init()
+								.scan("Inproceedings")
+								.filter("Inproceedings.PubID = " + pubId)
+								.project("Inproceedings.Crossref", "Inproceedings.Pages")
+								.list();
+
+						for (Tuple inp : inproc) {
+							Inproceedings i = new Inproceedings(
+									publication,
+									i(inp.get("Inproceedings.Crossref")),
+									inp.get("Inproceedings.Pages")
+							);
+							result = new FullInfo(i, a, keyword, publisher);
+							result.setAddition(getFullPublicationInfo(i.getCrossref()));
 						}
 						break;
 					case "book":
-						query = "SELECT \n" +
-								"  \"Book\".\"Volume\"\n" +
-								"FROM \n" +
-								"  public.\"Book\"\n" +
-								"WHERE \n" +
-								"  \"Book\".\"PubID\" = " + pubId + ";";
 
-						rs2 = conn.getRawQueryResult(query);
-						while (rs2.next()) {
-							Book j = new Book(publication, rs2.getString(1));
+						List<Tuple> books = cp.init()
+								.scan("Book")
+								.filter("Book.PubID = " + pubId)
+								.project("Book.Volume")
+								.list();
+
+						for (Tuple b : books) {
+							Book j = new Book(publication, b.get("Book.Volume"));
 							result = new FullInfo(j, a, keyword, publisher);
 						}
 						break;
-					case "incollection":
-						query = "SELECT \n" +
-								"  \"Incollection\".\"Crossref\", \n" +
-								"  \"Incollection\".\"Pages\" \n" +
-								"FROM \n" +
-								"  public.\"Incollection\"\n" +
-								"WHERE \n" +
-								"  \"Incollection\".\"PubID\" = " + pubId + ";\n";
 
-						rs2 = conn.getRawQueryResult(query);
-						while (rs2.next()) {
-							Incollection incoll = new Incollection(publication, rs2.getInt(1), rs2.getString(2));
-							result = new FullInfo(incoll, a, keyword, publisher);
-							result.setAddition(getFullPublicationInfo(rs2.getInt(1)));
+					case "incollection":
+
+						List<Tuple> incoll = cp.init()
+								.scan("Incollection")
+								.filter("Incollection.PubID = " + pubId)
+								.project("Incollection.Crossref", "Incollection.Pages")
+								.list();
+
+						for (Tuple inc : incoll) {
+							Incollection i = new Incollection(
+									publication,
+									i(inc.get("Incollection.Crossref")), inc.get("Incollection.Pages")
+							);
+							result = new FullInfo(i, a, keyword, publisher);
+							result.setAddition(getFullPublicationInfo(i.getCrossref()));
 						}
 						break;
 				}
-				query = "SELECT \n" +
-						"  \"Author\".\"ID\",\n" +
-						"  \"InstAuthPub\".\"Author\", \n" +
-						"  \"Institution\".\"ID\",\n" +
-						"  \"Institution\".\"Title\"\n" +
-						"FROM \n" +
-						"  public.\"InstAuthPub\" \n" +
-						"    LEFT OUTER JOIN public.\"Institution\" ON (\"InstAuthPub\".\"InstID\" = \"Institution\".\"ID\") \n" +
-						"    JOIN \"Author\" ON (\"InstAuthPub\".\"Author\" = \"Author\".\"Name\")\n" +
-						"WHERE \n" +
-						"   \"InstAuthPub\".\"PubID\" = " + pubId + ";";
+				List<Tuple> authors = cp.init()
+						.scan("Author")
+						.list();
+
+				List<Tuple> institutions = cp.init()
+						.scan("Institution")
+						.list();
+
+				List<Tuple> instauthpub = cp.init()
+						.scan("InstAuthPub")
+						.filter("InstAuthPub.PubID = " + pubId)
+						.join(institutions, "InstAuthPub.InstID", "Instituition.ID", "LEFT OUTER")
+						.join(authors, "InstAuthPub.Author", "Author.Name", "INNER")
+						.project("Author.ID", "InstAuthPub.Author", "Institution.ID", "Institution.Title")
+						.list();
+
 				if (result != null) {
-					List<Object> authors = this.processResult(conn.getRawQueryResult(query), Author.class);
-					result.setAuthors(authors);
+					List<Object> authorsProcessed = this.processResult(instauthpub, Author.class);
+					result.setAuthors(authorsProcessed);
 				}
 				return result;
 			}
@@ -364,20 +370,20 @@ public class CollectionRetriever {
 		return null;
 	}
 
-	public List<Object> processResult(ResultSet result, Class collectionOf) {
+	public List<Object> processResult(List<Tuple> result, Class collectionOf) {
 		return processResult(result, collectionOf, 0);
 	}
 
-	public List<Object> processResult(ResultSet result, Class collectionOf, int constID) {
+	public List<Object> processResult(List<Tuple> result, Class collectionOf, int constID) {
 		List<Object> answer = new LinkedList<>();
 
 		try {
-			while (result.next()) {
+			for (Tuple res : result) {
 				Constructor c = collectionOf.getDeclaredConstructors()[constID];
 				Object[] array = new Object[c.getParameterCount()];
 				for (int i = 0; i < c.getParameterCount(); ++i)
 					array[i] = ("" + c.getParameterTypes()[i].getSimpleName()).compareTo("int") == 0
-							? result.getInt(i + 1) : result.getString(i + 1);
+							? i(res.get(i)) : res.get(i);
 				Object instance = c.newInstance(array);
 
 				answer.add(instance);
@@ -412,147 +418,141 @@ public class CollectionRetriever {
 
 		// final query is here
 		sqlQuery += attributesComparison;
-		ResultSet result = conn.getRawQueryResult(sqlQuery);
+		//ResultSet result = conn.getRawQueryResult(sqlQuery);
 
-		return this.processResult(result, collectionOf);
+		//return this.processResult(result, collectionOf);
+		return new ArrayList<>();
 	}
 
 	public User getUser(String name) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"User\"\n" +
-				"WHERE \n" +
-				"  \"User\".\"Username\" ='" + name + "'\n";
-		List<Object> result = processResult(conn.getRawQueryResult(query), User.class);
-		return result.size() > 0 ? (User) result.get(0) : null;
+		List<Tuple> result = cp.init()
+				.scan("User")
+				.filter("User.Username = " + name)
+				.list();
+		return result.size() > 0 ? (User) processResult(result, User.class).get(0) : null;
 	}
 
 	public Journal getJournal(String title, String volume, String number) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"Journal\"\n" +
-				"WHERE \n" +
-				"  \"Journal\".\"Title\" = '" + title + "' AND \n" +
-				"  \"Journal\".\"Volume\" = '" + volume + "' AND \n" +
-				"  \"Journal\".\"Number\" = '" + number + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Journal.class);
+		List<Tuple> journals = cp.init()
+				.scan("Journal")
+				.filter("Journal.Title = " + title)
+				.filter("Journal.Volume = " + volume)
+				.filter("Journal.Number = " + number)
+				.list();
+
+		List<Object> result = processResult(journals, Journal.class);
 		return result.size() > 0 ? (Journal) result.get(0) : null;
 	}
 
 	public Conference getConference(String title, String volume) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"Conference\"\n" +
-				"WHERE \n" +
-				"  \"Conference\".\"Title\" = '" + title + "' AND \n" +
-				"  \"Conference\".\"Volume\" = '" + volume + "'\n";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Conference.class);
+		List<Tuple> conf = cp.init()
+				.scan("Conference")
+				.filter("Conference.Title = " + title)
+				.filter("Conference.Volume = " + volume)
+				.list();
+
+		List<Object> result = processResult(conf, Conference.class);
 		return result.size() > 0 ? (Conference) result.get(0) : null;
 	}
 
 	public Book getBook(String title, String year, String volume) {
-		String query = "SELECT \n" +
-				"  \"Publication\".\"ID\", \n" +
-				"  \"Publication\".\"Title\", \n" +
-				"  \"Publication\".\"Year\", \n" +
-				"  \"Book\".\"Volume\"\n" +
-				"FROM \n" +
-				"  public.\"Book\", \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE \n" +
-				"  \"Book\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"Publication\".\"Title\" = '" + title + "' AND \n" +
-				"  \"Publication\".\"Year\" = " + year + " AND \n" +
-				"  \"Book\".\"Volume\" = '" + volume + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Book.class);
+		List<Tuple> books = cp.init()
+				.scan("Book")
+				.filter("Book.Volume = " + volume)
+				.list();
+
+		List<Tuple> pubs = cp.init()
+				.scan("Publication")
+				.filter("Publication.Title = " + title)
+				.filter("Publication.Year = " + year)
+				.join(books, "Publication.ID", "Book.PubID", "INNER")
+				.project("Publication.ID", "Publication.Title", "Publication.Year", "Book.Volume")
+				.list();
+
+		List<Object> result = processResult(pubs, Book.class);
 		return result.size() > 0 ? (Book) result.get(0) : null;
 	}
 
 	public Proceedings getProceedings(String title, String year) {
-		String query = "SELECT \n" +
-				"  \"Publication\".\"ID\", \n" +
-				"  \"Publication\".\"Title\", \n" +
-				"  \"Publication\".\"Year\", \n" +
-				"  \"Book\".\"Volume\"\n" +
-				"FROM \n" +
-				"  public.\"Book\", \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE \n" +
-				"  \"Book\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"Publication\".\"Title\" = '" + title + "' AND \n" +
-				"  \"Publication\".\"Year\" = " + year;
-		List<Object> result = processResult(conn.getRawQueryResult(query), Proceedings.class);
+		List<Tuple> books = cp.init()
+				.scan("Book")
+				.list();
+
+		List<Tuple> pubs = cp.init()
+				.scan("Publication")
+				.filter("Publication.Title = " + title)
+				.filter("Publication.Year = " + year)
+				.join(books, "Publication.ID", "Book.PubID", "INNER")
+				.project("Publication.ID", "Publication.Title", "Publication.Year", "Book.Volume")
+				.list();
+
+		List<Object> result = processResult(pubs, Proceedings.class);
 		return result.size() > 0 ? (Proceedings) result.get(0) : null;
 	}
 
 	public Area getArea(String name) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"Area\"\n" +
-				"WHERE \n" +
-				"  \"Area\".\"Name\" = '" + name + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Area.class);
+		List<Tuple> areas = cp.init()
+				.scan("Area")
+				.filter("Area.Name = " + name)
+				.list();
+
+		List<Object> result = processResult(areas, Area.class);
 		return result.size() > 0 ? (Area) result.get(0) : null;
 	}
 
 	public Keyword getKeyword(String word) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"Keyword\"\n" +
-				"WHERE \n" +
-				"  \"Keyword\".\"Word\" = '" + word + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Keyword.class);
+		List<Tuple> krywords = cp.init()
+				.scan("Keyword")
+				.filter("Keyword.Word = " + word)
+				.list();
+
+
+		List<Object> result = processResult(krywords, Keyword.class);
 		return result.size() > 0 ? (Keyword) result.get(0) : null;
 	}
 
 	public Institution getInstitution(String title) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"Institution\"\n" +
-				"WHERE \n" +
-				"  \"Institution\".\"Title\" = '" + title + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Institution.class);
+		List<Tuple> inst = cp.init()
+				.scan("Institution")
+				.filter("Institution.Title = " + title)
+				.list();
+		List<Object> result = processResult(inst, Institution.class);
 		return result.size() > 0 ? (Institution) result.get(0) : null;
 	}
 
 	public Publisher getPublisher(String name) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"Publisher\"\n" +
-				"WHERE \n" +
-				"  \"Publisher\".\"Name\" = '" + name + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Publisher.class);
+		List<Tuple> inst = cp.init()
+				.scan("Publisher")
+				.filter("Publisher.Name = " + name)
+				.list();
+
+		List<Object> result = processResult(inst, Publisher.class);
 		return result.size() > 0 ? (Publisher) result.get(0) : null;
 	}
 
 	public Author getAuthor(String name) {
-		String query = "SELECT \n" +
-				"  * \n" +
-				"FROM \n" +
-				"  public.\"Author\"\n" +
-				"WHERE \n" +
-				"  \"Author\".\"Name\" = '" + name + "'";
-		List<Object> result = processResult(conn.getRawQueryResult(query), Author.class, 1);
+		List<Tuple> auth = cp.init()
+				.scan("Author")
+				.filter("Author.Name = " + name)
+				.list();
+
+		List<Object> result = processResult(auth, Author.class, 1);
 		return result.size() > 0 ? (Author) result.get(0) : null;
 	}
 
 	public List<Object> getCrossreferenced(String type, String ID) {
 		type = Character.toUpperCase(type.charAt(0)) + type.substring(1);
-		String query = String.format("SELECT \n" +
-				"  \"Publication\".* \n" +
-				"FROM \n" +
-				"  public.\"Publication\", \n" +
-				"  public.\"%1$s\"\n" +
-				"WHERE \n" +
-				"  \"%1$s\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"%1$s\".\"Crossref\" = %2$s;", type, ID);
-		return processResult(conn.getRawQueryResult(query), Publication.class);
+
+		List<Tuple> smth = cp.init()
+				.scan(type)
+				.filter(type + ".Crossref = " + ID)
+				.list();
+
+		List<Tuple> pubs = cp.init()
+				.scan("Publication")
+				.join(smth, "Publication.ID", type + ".PubID", "INNER")
+				.list();
+
+		return processResult(pubs, Publication.class);
 	}
 }

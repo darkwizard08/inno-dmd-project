@@ -76,6 +76,10 @@ public class Tuple implements Writable {
 		this.attributes.put(key, value);
 	}
 
+	public String get(int i){
+		return (String) this.attributes.values().toArray()[i];
+	}
+
 	public Set<String> getKeys() {
 		return this.attributes.keySet();
 	}

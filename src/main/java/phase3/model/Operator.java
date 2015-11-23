@@ -6,14 +6,15 @@ import phase3.model.tuple.Tuple;
  * @author darkwizard
  */
 public class Operator {
-	private String field;
-	private String operator;
-	private String arg;
+	private String field = "";
+	private String operator = "";
+	private String arg = "";
 
 	public Operator(String... params) {
 		this.field = params[0];
 		this.operator = params[1].toUpperCase();
-		this.arg = params[2];
+		if (params.length > 2)
+			this.arg = params[2];
 		// "Author.Name" "in" "Vasya Petrov, Petya Ivanov"
 	}
 

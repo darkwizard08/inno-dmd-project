@@ -12,7 +12,7 @@ public class Operator {
 
 	public Operator(String... params) {
 		this.field = params[0];
-		this.operator = params[1];
+		this.operator = params[1].toUpperCase();
 		this.arg = params[2];
 	}
 
@@ -35,10 +35,18 @@ public class Operator {
 		return compare(value, this.arg);
 	}
 
+	public boolean like(String compare, String pattern) {
+		// Something like %ething%
+		pattern = pattern.toUpperCase();
+		return compare.toUpperCase().contains(pattern);
+	}
+
 	public boolean compare(Comparable left, Comparable right) {
 		switch (this.operator) {
 			case "=":
 				return left.compareTo(right) == 0;
+			case "LIKE":
+				return like(left.toString(), right.toString());
 			default:
 				throw new Error("No such operator found!");
 		}

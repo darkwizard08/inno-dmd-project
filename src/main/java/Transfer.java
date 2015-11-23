@@ -1,4 +1,4 @@
-import db.DBConnector;
+/*
 import phase3.CommandProcessor;
 
 import java.sql.ResultSet;
@@ -6,8 +6,6 @@ import java.sql.SQLException;
 
 public class Transfer {
 	public static void main(String[] args) {
-		DBConnector conn = DBConnector.getInstance();
-		conn.connect();
 		CommandProcessor cp = new CommandProcessor();
 
 		cp.create("Area", "id", "ID", "Name");
@@ -236,3 +234,4 @@ public class Transfer {
 		cp.close();
 	}
 }
+*/

@@ -11,7 +11,6 @@ import java.util.Map;
 public class CollectionUpdater {
 	private static CollectionUpdater updtr = null;
 	private final HashMap<String, String> update, delete, insert;
-	private DBConnector conn = null;
 	private CommandProcessor cp;
 
 	private CollectionUpdater() {

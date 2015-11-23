@@ -16,7 +16,6 @@ public class CollectionRetriever {
 	private final HashSet<String> types;
 
 	private final CommandProcessor cp;
-	private DBConnector conn = null;
 
 	private CollectionRetriever() {
 		this.cp = new CommandProcessor();

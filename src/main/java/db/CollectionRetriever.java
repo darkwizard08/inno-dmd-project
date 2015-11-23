@@ -6,6 +6,7 @@ import phase3.model.tuple.Tuple;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CollectionRetriever {
 	private static CollectionRetriever retr = null;
@@ -622,5 +623,13 @@ public class CollectionRetriever {
 				.list();
 
 		return processResult(pubs, Publication.class);
+	}
+
+	public static String convertListOfTuplesToString(List<Tuple> list) {
+		List<String> res = list.stream()
+				.map(tuple -> tuple.get(0))
+				.collect(Collectors.toList());
+
+		return String.join(", ", res);
 	}
 }

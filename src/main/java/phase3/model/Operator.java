@@ -14,6 +14,7 @@ public class Operator {
 		this.field = params[0];
 		this.operator = params[1].toUpperCase();
 		this.arg = params[2];
+		// "Author.Name" "in" "Vasya Petrov, Petya Ivanov"
 	}
 
 	public boolean matches(Tuple tuple) {
@@ -41,12 +42,23 @@ public class Operator {
 		return compare.toUpperCase().contains(pattern);
 	}
 
+	public boolean in(String compare, String value) {
+		String[] values = value.split(", ");
+		for (String v : values)
+			if (v.equals(compare))
+				return true;
+
+		return false;
+	}
+
 	public boolean compare(Comparable left, Comparable right) {
 		switch (this.operator) {
 			case "=":
 				return left.compareTo(right) == 0;
 			case "LIKE":
 				return like(left.toString(), right.toString());
+			case "IN":
+				return in(left.toString(), right.toString());
 			default:
 				throw new Error("No such operator found!");
 		}

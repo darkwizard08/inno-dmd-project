@@ -1,5 +1,8 @@
 package phase3.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import phase3.model.tuple.Tuple;
 
 /**
@@ -13,8 +16,12 @@ public class Operator {
 	public Operator(String... params) {
 		this.field = params[0];
 		this.operator = params[1].toUpperCase();
-		if (params.length > 2)
-			this.arg = params[2];
+		if (params.length > 2) {
+			List<String> res = new ArrayList<>();
+			for (int i = 2; i < params.length; ++i)
+				res.add(params[i]);
+			this.arg = String.join(", ", params);
+		}
 		// "Author.Name" "in" "Vasya Petrov, Petya Ivanov"
 	}
 

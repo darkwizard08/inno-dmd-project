@@ -1,9 +1,9 @@
 package phase3.model;
 
+import phase3.model.tuple.Tuple;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import phase3.model.tuple.Tuple;
 
 /**
  * @author darkwizard
@@ -20,7 +20,7 @@ public class Operator {
 			List<String> res = new ArrayList<>();
 			for (int i = 2; i < params.length; ++i)
 				res.add(params[i]);
-			this.arg = String.join(", ", res);
+			this.arg = String.join(" ", res);
 		}
 		// "Author.Name" "in" "Vasya Petrov, Petya Ivanov"
 	}

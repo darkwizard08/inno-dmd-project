@@ -143,7 +143,10 @@ public class CollectionRetriever {
 				"  FROM  \n" +
 				"    public.\"Article\"\n" +
 				"  WHERE \n" +
-				"    \"Article\".\"JournalID\" IN (SELECT \"Journal\".\"ID\" from public.\"Journal\" where \"Journal\".\"Title\" like '%%%1$s%%')\n" +
+				"    \"Article\".\"JournalID\" IN " +
+				"(SELECT \"Journal\".\"ID\" " +
+				"from public.\"Journal\" " +
+				"where \"Journal\".\"Title\" like '%%%1$s%%')\n" +
 				"\n" +
 				"  UNION\n" +
 				"\n" +
@@ -152,7 +155,10 @@ public class CollectionRetriever {
 				"  FROM  \n" +
 				"    public.\"Proceedings\"\n" +
 				"  WHERE \n" +
-				"    \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" like '%%%1$s%%')\n" +
+				"    \"Proceedings\".\"ConferenceID\" IN " +
+				"(SELECT \"Conference\".\"ID\" " +
+				"from public.\"Conference\" " +
+				"where \"Conference\".\"Title\" like '%%%1$s%%')\n" +
 				"\n" +
 				"  UNION\n" +
 				"\n" +
@@ -167,7 +173,10 @@ public class CollectionRetriever {
 				"    FROM  \n" +
 				"      public.\"Proceedings\"\n" +
 				"    WHERE \n" +
-				"      \"Proceedings\".\"ConferenceID\" IN (SELECT \"Conference\".\"ID\" from public.\"Conference\" where \"Conference\".\"Title\" like '%%%1$s%%')))");
+				"      \"Proceedings\".\"ConferenceID\" IN " +
+				"(SELECT \"Conference\".\"ID\" " +
+				"from public.\"Conference\"" +
+				" where \"Conference\".\"Title\" like '%%%1$s%%')))");
 	}
 
 	public static CollectionRetriever getInstance() {
@@ -183,6 +192,14 @@ public class CollectionRetriever {
 	}
 	 */
 
+	public static String convertListOfTuplesToString(List<Tuple> list) {
+		List<String> res = list.stream()
+				.map(tuple -> tuple.get(0))
+				.collect(Collectors.toList());
+
+		return String.join(", ", res);
+	}
+
 	public List<Object> getPublications(String searchType, String searchFor, String offset, String sortType, String orderType) {
 		if (searchType.equals("pubType")) {
 			searchFor = searchFor.toLowerCase();
@@ -192,30 +209,47 @@ public class CollectionRetriever {
 			searchFor = Character.toUpperCase(searchFor.charAt(0)) + searchFor.substring(1);
 		}
 
-		/*String query = String.format(queries.get(searchType), searchFor, offset);
-		query = new StringBuffer(
-				query)
-				.insert(query.indexOf("WHERE"), sortings.get(sortType))
-				.insert(query.indexOf("WHERE"), "CROSS JOIN (" + query.replace("\"Publication\".*", "COUNT(DISTINCT \"Publication\".\"ID\")") + ") AS count\n")
-				.insert(query.indexOf("\nFROM"), sortAttributes.get(sortType))
-				.insert(query.indexOf("\nFROM"), ",\n" +
-						" count.count") +
-				(sortType != null ? String.format(orderBy, orderings.get(sortType), orderType.toUpperCase()) : String.format(orderBy, "\"Publication\".\"ID\"", "ASC")) +
-				String.format(limitOffset, "50", offset);
-<<<<<<< HEAD
-		//ResultSet rs = conn.getRawQueryResult(query);
-		//List<Object> result = this.processResult(rs, PublicationSearchResult.class);
-		return null;
-=======
-		ResultSet rs = conn.getRawQueryResult(query);
-		List<Object> result = this.processResult(rs, PublicationSearchResult.class);*/
-		/*List<Tuple> instAuthPub = cp.scan("InstAuthPub").list(),
-				institution = cp.scan("Institution").list();*/
-
 		switch (searchType) {
+			case "institution":
+				List<Tuple> institution = cp.scan("Institution")
+						.filter("Institution.Title LIKE " + searchFor).list(),
+						instauthpub = cp.scan("InstAuthPub")
+								.join(institution, "InstAuthPub.InstID", "Institution.ID", "INNER").list();
+				cp.scan("Publication")
+						.join(instauthpub, "Publication.ID", "InstAuthPub.PubID", "INNER")
+						.groupBy("Publication.ID")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
+				break;
+			case "venue":
+				List<Tuple> journal = cp.scan("Journal")
+						.filter("Journal.Title LIKE " + searchFor)
+						.project("Journal.ID").list(),
+						conference = cp.scan("Conference")
+								.filter("Conference.Title LIKE " + searchFor)
+								.project("Conference.ID").list();
+				List<Tuple> proceedings = cp.scan("Proceedings")
+						.filter("Proceedings.ConferenceID IN " + convertListOfTuplesToString(conference))
+						.project("Proceedings.PubID")
+						.rename("Proceedings.PubID", "Publication.ID").list();
+				List<Tuple> inproceedings = cp.scan("Inproceedings")
+						.filter("Inproceedings.Crossref IN " + convertListOfTuplesToString(proceedings))
+						.project("Inproceedings.PubID")
+						.rename("Inproceedings.PubID", "Publication.ID").list(),
+						article = cp.scan("Article").filter("Article.JournalID IN " + convertListOfTuplesToString(journal))
+								.project("Article.PubID")
+								.rename("Article.PubID", "Publication.ID").list();
+				cp.scan("Publication").filter("Publication.ID IN " + convertListOfTuplesToString(new CommandProcessor().init()
+						.union(article)
+						.union(proceedings)
+						.union(inproceedings).list())).project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
+
+				break;
+			case "authorName":
+				// TODO
+				break;
 			case "researchArea":
 				List<Tuple> area = cp.scan("Area")
-						.filter("Area.Name = " + searchFor)
+						.filter("Area.Name LIKE " + searchFor)
 						.list(),
 						pubArea = cp.scan("PubArea")
 								.list();
@@ -231,12 +265,12 @@ public class CollectionRetriever {
 				break;
 			case "pubTitle":
 				cp.scan("Publication")
-						.filter("Publication.Title")
+						.filter("Publication.Title LIKE " + searchFor)
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
 				break;
 			case "keyword":
 				List<Tuple> keyword = cp.scan("Keyword")
-						.filter("Keyword.Word = " + searchFor)
+						.filter("Keyword.Word LIKE " + searchFor)
 						.list(),
 						pubKeyword = cp.scan("PubKeyword")
 								.list();
@@ -623,13 +657,5 @@ public class CollectionRetriever {
 				.list();
 
 		return processResult(pubs, Publication.class);
-	}
-
-	public static String convertListOfTuplesToString(List<Tuple> list) {
-		List<String> res = list.stream()
-				.map(tuple -> tuple.get(0))
-				.collect(Collectors.toList());
-
-		return String.join(", ", res);
 	}
 }

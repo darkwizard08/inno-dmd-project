@@ -186,7 +186,6 @@ public class CollectionUpdater {
 	}
 
 	public int addPublication(Map<String, String> params) {
-		try {
 			// Check references
 			if (params.get("type").equals("inproceedings") || params.get("type").equals("incollection")) {
 				params.put("crossref", getReference(params));
@@ -195,48 +194,40 @@ public class CollectionUpdater {
 				}
 			}
 
-			String query = String.format(insert.get("publication"), params.get("title"), params.get("year"), params.get("type"));
-			ResultSet rs = conn.getRawQueryResult(query);
-			rs.next();
-			params.put("ID", Integer.toString(rs.getInt(1)));
+
+		String id = getNewID("Publication", "Publication.ID");
+		cp.insert("Publication", getNewID("Publication", "Publication.id"), id, params.get("title"), params.get("year"), params.get("type"));
+
+		params.put("ID", id);
 
 			params.put("cID", addCollection(params));
 
-			// Preprocess
-			params.put("pages", params.get("pages").length() > 0 ? "'" + params.get("pages") + "'" : "NULL");
-			params.put("volume", params.get("volume").length() > 0 ? "'" + params.get("volume") + "'" : "NULL");
 
-			query = insert.get(params.get("type"));
 			switch (params.get("type")) {
 				case "article":
-					query = String.format(query,
-							params.get("ID"), params.get("cID"), params.get("pages"));
+
+					cp.insert("Article", id("Article"), params.get("ID"), params.get("cID"), params.get("pages"));
 					break;
 				case "inproceedings":
-					query = String.format(query,
-							params.get("ID"), params.get("crossref"), params.get("pages"));
+
+					cp.insert("Inproceedings", id("Inproceedings"), params.get("ID"), params.get("crossref"), params.get("pages"));
 					break;
 				case "proceedings":
-					query = String.format(query,
-							params.get("ID"), params.get("cID"));
+
+					cp.insert("Proceedings", id("Proceedings"), params.get("ID"), params.get("cID"));
 					break;
 				case "incollection":
-					query = String.format(query,
-							params.get("ID"), params.get("crossref"), params.get("pages"));
+
+					cp.insert("Incollection", id("Incollection"), params.get("ID"), params.get("crossref"), params.get("pages"));
 					break;
 				case "book":
-					query = String.format(query,
-							params.get("ID"), params.get("volume"));
+
+					cp.insert("Book", id("Book"), params.get("ID"), params.get("volume"));
 					break;
 			}
-			conn.executeNonQuery(query);
 
 			addAreaKeywordPublisher(params);
 			return Integer.parseInt(params.get("ID"));
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return 0;
 	}
 
 	public String addCollection(Map<String, String> params) {
@@ -275,25 +266,20 @@ public class CollectionUpdater {
 	}
 
 	public void addAreaKeywordPublisher(Map<String, String> params) {
-		String query;
 
-		query = String.format(delete.get("pubArea"), params.get("ID"));
-		conn.executeNonQuery(query);
+		cp.scan("PubArea").filter("PubArea.PubID = " + params.get("ID")).delete("PubArea");
 
-		query = String.format(delete.get("pubKeyword"), params.get("ID"));
-		conn.executeNonQuery(query);
+		cp.scan("PubKeyword").filter("PubKeyword.PubID = " + params.get("ID")).delete("PubKeyword");
 
-
-		query = String.format(delete.get("published"), params.get("ID"));
-		conn.executeNonQuery(query);
+		cp.scan("Published").filter("Published.PublicationID = " + params.get("ID")).delete("Published");
 
 		if (params.get("area").length() > 0) {
 			Area area = CollectionRetriever.getInstance().getArea(params.get("area"));
 			if (area == null) {
 				area = addArea(params.get("area"));
 			}
-			query = String.format(insert.get("pubArea"), params.get("ID"), area.getID());
-			conn.executeNonQuery(query);
+
+			cp.insert("PubArea", id("PubArea"), params.get("ID"), Integer.toString(area.getID()));
 		}
 
 		if (params.get("keyword").length() > 0) {
@@ -301,16 +287,16 @@ public class CollectionUpdater {
 			if (keyword == null) {
 				keyword = addKeyword(params.get("keyword"));
 			}
-			query = String.format(insert.get("pubKeyword"), params.get("ID"), keyword.getID());
-			conn.executeNonQuery(query);
+
+			cp.insert("PubKeyword", id("PubKeyword"), params.get("ID"), Integer.toString(keyword.getID()));
 		}
 		if (params.get("publisher").length() > 0) {
 			Publisher publisher = CollectionRetriever.getInstance().getPublisher(params.get("publisher"));
 			if (publisher == null) {
 				publisher = addPublisher(params.get("publisher"));
 			}
-			query = String.format(insert.get("published"), params.get("ID"), publisher.getID());
-			conn.executeNonQuery(query);
+
+			cp.insert("Published", id("Published"), params.get("ID"), Integer.toString(publisher.getID()));
 		}
 	}
 
@@ -323,61 +309,78 @@ public class CollectionUpdater {
 			}
 		}
 
-		String query = String.format(update.get("publication"),
-				params.get("title"), params.get("year"), params.get("ID"));
-		conn.executeNonQuery(query);
+
+		cp.scan("Publication")
+				.filter("Publication.ID = " + params.get("ID"))
+				.set("Publication.Title", params.get("title"))
+				.set("Publication.Year", params.get("year"))
+				.update("Publication");
 
 		params.put("cID", addCollection(params));
 
-		// Preprocess
-		params.put("pages", params.get("pages").length() > 0 ? "'" + params.get("pages") + "'" : "NULL");
-		params.put("volume", params.get("volume").length() > 0 ? "'" + params.get("volume") + "'" : "NULL");
-
-		query = update.get(params.get("type"));
 		switch (params.get("type")) {
 			case "article":
-				query = String.format(query,
-						params.get("cID"), params.get("pages"), params.get("ID"));
+
+				cp.scan("Article")
+						.filter("Article.PubID = " + params.get("ID"))
+						.set("Article.JournalID", params.get("cID"))
+						.set("Article.Pages", params.get("pages"))
+						.update("Article");
 				break;
 			case "proceedings":
-				query = String.format(query,
-						params.get("cID"), params.get("ID"));
+
+				cp.scan("Proceedings")
+						.filter("Proceedings.PubID = " + params.get("ID"))
+						.set("Proceedings.ConferenceID", params.get("cID"))
+						.update("Proceedings");
 				break;
 			case "inproceedings":
-				query = String.format(query,
-						params.get("crossref"), params.get("pages"), params.get("ID"));
+
+				cp.scan("Inproceedings")
+						.filter("Inproceedings.PubID = " + params.get("ID"))
+						.set("Inproceedings.Crossref", params.get("crossref"))
+						.set("Inproceedings.Pages", params.get("pages"))
+						.update("Inproceedings");
 				break;
 			case "incollection":
-				query = String.format(query,
-						params.get("crossref"), params.get("pages"), params.get("ID"));
+
+				cp.scan("Incollection")
+						.filter("Incollection.PubID = " + params.get("ID"))
+						.set("Incollection.Crossref", params.get("crossref"))
+						.set("Incollection.Pages", params.get("pages"))
+						.update("Incollection");
 				break;
 			case "book":
-				query = String.format(query,
-						params.get("volume"), params.get("ID"));
+
+				cp.scan("Book")
+						.filter("Book.PubID = " + params.get("ID"))
+						.set("Book.Volume", params.get("volume"))
+						.update("Book");
 				break;
 		}
-		conn.executeNonQuery(query);
 
 		addAreaKeywordPublisher(params);
 	}
 
 	public void deletePublication(String type, String ID) {
-		String query = String.format(delete.get("publication"), ID);
-		conn.executeNonQuery(query);
-		query = String.format(delete.get(type), ID);
-		conn.executeNonQuery(query);
-		query = String.format(delete.get("pubArea"), ID);
-		conn.executeNonQuery(query);
-		query = String.format(delete.get("pubKeyword"), ID);
-		conn.executeNonQuery(query);
-		query = String.format(delete.get("instAuthPub"), ID);
-		conn.executeNonQuery(query);
-		query = String.format(delete.get("published"), ID);
-		conn.executeNonQuery(query);
-		query = String.format(delete.get("referenced").replace("AND", "OR").replace("%s", "%1$s"), ID);
-		conn.executeNonQuery(query);
-		if (type.equals("book") || type.equals("proceedings")) {
-			List<Object> publication = CollectionRetriever.getInstance().getCrossreferenced(type.equals("book") ? "incollection" : "inproceedings", ID);
+		type = Character.toUpperCase(type.charAt(0)) + type.substring(1);
+
+		cp.scan("Publication").filter("Publication.ID = " + ID).delete("Publication");
+
+		cp.scan(type).filter(type + ".ID = " + ID).delete(type);
+
+		cp.scan("PubArea").filter("PubArea.PubID = " + ID).delete("PubArea");
+
+		cp.scan("PubKeyword").filter("PubKeyword.PubID = " + ID).delete("PubKeyword");
+
+		cp.scan("InstAuthPub").filter("InstAuthPub.PubID = " + ID).delete("InstAuthPub");
+
+		cp.scan("Published").filter("Published.PublicationID = " + ID).delete("Published");
+
+		cp.scan("Referenced").filter("Referenced.PubID = " + ID).delete("Referenced");
+		cp.scan("Referenced").filter("Referenced.RefPubID = " + ID).delete("Referenced");
+		if (type.equals("Book") || type.equals("Proceedings")) {
+			List<Object> publication = CollectionRetriever.getInstance().getCrossreferenced(type.equals("Book") ? "incollection" : "inproceedings", ID);
 			for (Object o : publication) {
 				Publication p = (Publication) o;
 				deletePublication(p.type, Integer.toString(p.ID));
@@ -386,9 +389,7 @@ public class CollectionUpdater {
 	}
 
 	public void addUser(String name, String pass) {
-		/*String query = "insert into \"User\"(\"Username\", \"Password\") " +
-				"values ('" + name + "', '" + pass + "')";*/
-		cp.insert("User", getNewID("User", "id"), getNewID("User", "ID"), name, pass);
+		cp.insert("User", getNewID("User", "User.id"), getNewID("User", "User.ID"), name, pass);
 	}
 
 	public Journal addJournal(String title, String volume, String number) {
@@ -536,5 +537,9 @@ public class CollectionUpdater {
 				.limit(1)
 				.list();
 		return res.size() == 1 ? (Integer.parseInt(res.get(0).get(attribute)) + 1) + "" : 1 + "";
+	}
+
+	public String id(String table) {
+		return getNewID(table, table + ".id");
 	}
 }

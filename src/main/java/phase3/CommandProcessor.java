@@ -1,7 +1,6 @@
 package phase3;
 
 import phase3.model.Operator;
-import phase3.model.Table;
 import phase3.model.tuple.Tuple;
 
 import java.util.ArrayList;
@@ -95,8 +94,22 @@ public class CommandProcessor {
 		this.resultSet = this.resultSet.stream().sorted((o1, o2) -> {
 			switch (order) {
 				case "ASC":
+					try {
+						int arg = Integer.parseInt(o1.get(attribute)),
+								compare = Integer.parseInt(o2.get(attribute));
+						return Integer.compare(arg, compare);
+					} catch (NumberFormatException e) {
+
+					}
 					return o1.get(attribute).compareTo(o2.get(attribute));
 				case "DESC":
+					try {
+						int arg = Integer.parseInt(o1.get(attribute)),
+								compare = Integer.parseInt(o2.get(attribute));
+						return Integer.compare(compare, arg);
+					} catch (NumberFormatException e) {
+
+					}
 					return o2.get(attribute).compareTo(o1.get(attribute));
 				default:
 					throw new Error("Can't sort this tuple!");
@@ -140,8 +153,10 @@ public class CommandProcessor {
 				System.out.println("Merged " + merging);
 				finalSet.add(merging);
 			} else if (joinType.equals("LEFT OUTER")) {
-				Tuple t = new Tuple(anotherTable.get(0).getKeys());
-				merging.merge(t);
+				if (anotherTable.size() > 0) {
+					Tuple t = new Tuple(anotherTable.get(0).getKeys());
+					merging.merge(t);
+				}
 				finalSet.add(merging);
 				System.out.println("LEFT OUTER MERGE");
 			}
@@ -294,10 +309,9 @@ public class CommandProcessor {
 		dm.close();
 	}
 
-	public void testAddTables(Table... tables) {
-		for (Table t : tables) {
-			dm.testAddTable(t);
-		}
+	public CommandProcessor rename(String oldAttrName, String newAttrName) {
+		this.resultSet.forEach(t -> t.renameKey(oldAttrName, newAttrName));
+		return this;
 	}
 
 	public List<Tuple> list() {

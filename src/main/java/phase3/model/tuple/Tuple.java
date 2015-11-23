@@ -3,7 +3,10 @@ package phase3.model.tuple;
 import phase3.model.entities.Writable;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author darkwizard
@@ -31,18 +34,11 @@ public class Tuple implements Writable {
 		}
 	}
 
-	public void renameKeys(List<String> oldKeys, List<String> newKeys) {
-		if (oldKeys.size() != newKeys.size())
-			throw new Error("Needed to be sized equally!");
-
-		for (int i = 0; i < oldKeys.size(); ++i) {
-			String oldKey = oldKeys.get(i);
-			String newKey = newKeys.get(i);
-			if (!this.attributes.containsKey(newKey)) {
-				String value = this.get(oldKey);
-				this.attributes.remove(oldKey);
-				this.attributes.put(newKey, value);
-			}
+	public void renameKey(String oldKey, String newKey) {
+		if (!this.attributes.containsKey(newKey)) {
+			String value = this.get(oldKey);
+			this.attributes.remove(oldKey);
+			this.attributes.put(newKey, value);
 		}
 	}
 

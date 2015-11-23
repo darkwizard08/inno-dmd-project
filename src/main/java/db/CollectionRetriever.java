@@ -6,7 +6,6 @@ import phase3.model.tuple.Tuple;
 
 import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 public class CollectionRetriever {
@@ -210,8 +209,8 @@ public class CollectionRetriever {
 =======
 		ResultSet rs = conn.getRawQueryResult(query);
 		List<Object> result = this.processResult(rs, PublicationSearchResult.class);*/
-		List<Tuple> instAuthPub = cp.scan("InstAuthPub").list(),
-				institution = cp.scan("Institution").list();
+		/*List<Tuple> instAuthPub = cp.scan("InstAuthPub").list(),
+				institution = cp.scan("Institution").list();*/
 
 		switch (searchType) {
 			case "researchArea":
@@ -245,9 +244,9 @@ public class CollectionRetriever {
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
 				break;
 			case "pubType":
-				List<Tuple> type = cp.scan(searchFor).list();
+				List<Tuple> type = cp.scan(searchFor).project(searchFor + ".PubID").list();
 				cp.scan("Publication")
-						.join(type, "Publication.ID", searchFor + ".ID", "INNER")
+						.join(type, "Publication.ID", searchFor + ".PubID", "INNER")
 						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
 				break;
 			case "references":
@@ -268,7 +267,29 @@ public class CollectionRetriever {
 				break;
 		}
 
-		cp.count("*").offset(Integer.parseInt(offset))
+		cp.count("*");
+
+		if (sortType != null) {
+			orderType = orderType.toUpperCase();
+			switch (sortType) {
+				case "cite":
+					CommandProcessor rank = new CommandProcessor();
+					rank.scan("Referenced")
+							.count("Referenced.PubID")
+							.groupBy("Referenced.RefPubID")
+							.project("Referenced.RefPubID", "count(Referenced.PubID)")
+							.rename("Referenced.RefPubID", "rank.RefPubID")
+							.rename("count(Referenced.PubID)", "rank.count");
+					cp.join(rank.list(), "Publication.ID", "rank.RefPubID", "LEFT OUTER")
+							.coalesce("0").sort("rank.count", orderType);
+				case "year":
+					cp.sort("Publication.Year", orderType);
+			}
+		} else {
+			cp.sort("Publication.ID", "ASC");
+		}
+
+		cp.offset(Integer.parseInt(offset))
 				.limit(50);
 
 		List<Object> result = this.processResult(cp.list(), PublicationSearchResult.class);
@@ -288,13 +309,13 @@ public class CollectionRetriever {
 		List<Tuple> pubkeyw = this.cp.init().scan("PubKeyword").list();
 
 		List<Tuple> res = cp.init().scan("Publication")
+				.filter("Publication.ID = " + pubId)
 				.join(pubarea, "Publication.ID", "PubArea.PubID", "LEFT OUTER")
 				.join(pubkeyw, "Publication.ID", "PubKeyword.PubID", "LEFT OUTER")
 				.join(area, "PubArea.ID", "Area.ID", "LEFT OUTER")
 				.join(keyw, "PubKeyword.KeywordID", "Keyword.ID", "LEFT OUTER")
 				.join(published, "Publication.ID", "Published.PublicationID", "LEFT OUTER")
 				.join(publ, "Publisher.ID", "Published.PublisherID", "LEFT OUTER")
-				.filter("Publication.ID = " + pubId)
 				.list();
 
 			for (Tuple tp : res) {
@@ -451,7 +472,7 @@ public class CollectionRetriever {
 				Object[] array = new Object[c.getParameterCount()];
 				for (int i = 0; i < c.getParameterCount(); ++i)
 					array[i] = ("" + c.getParameterTypes()[i].getSimpleName()).compareTo("int") == 0
-							? Integer.parseInt(t.get(i + 1)) : t.get(i + 1);
+							? Integer.parseInt(t.get(i)) : t.get(i);
 
 				Object instance = c.newInstance(array);
 

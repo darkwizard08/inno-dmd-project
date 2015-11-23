@@ -245,7 +245,15 @@ public class CollectionRetriever {
 
 				break;
 			case "authorName":
-				// TODO
+				List<Tuple> authid = cp.scan("Author").filter("Author.Name LIKE " + searchFor)
+						.project("Author.ID").list();
+				List<Tuple> authname = cp.scan("Author").filter("Author.ID IN " + convertListOfTuplesToString(authid))
+						.project("Author.Name").list();
+				instauthpub = cp.scan("InstAuthPub")
+						.filter("InstAuthPub.Author IN " + convertListOfTuplesToString(authname)).list();
+				cp.scan("Publication").join(instauthpub, "Publication.ID", "InstAuthPub.PubID", "INNER")
+						.groupBy("Publication.ID")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
 				break;
 			case "researchArea":
 				List<Tuple> area = cp.scan("Area")

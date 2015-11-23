@@ -20,7 +20,7 @@ public class Operator {
 			List<String> res = new ArrayList<>();
 			for (int i = 2; i < params.length; ++i)
 				res.add(params[i]);
-			this.arg = String.join(", ", params);
+			this.arg = String.join(", ", res);
 		}
 		// "Author.Name" "in" "Vasya Petrov, Petya Ivanov"
 	}

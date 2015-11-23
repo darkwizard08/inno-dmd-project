@@ -109,4 +109,20 @@ public class Tuple implements Writable {
 		}
 		return length;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Tuple) {
+			for (String key : this.getKeys()) {
+				if (!((Tuple) obj).contains(key))
+					return false;
+
+				if (!((Tuple) obj).get(key).equals(this.get(key)))
+					return false;
+			}
+
+			return true;
+		}
+		return super.equals(obj);
+	}
 }

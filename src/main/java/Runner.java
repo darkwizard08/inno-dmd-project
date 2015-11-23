@@ -5,7 +5,6 @@
 import db.NotFoundException;
 import model.User;
 import phase3.CommandProcessor;
-import phase3.model.tuple.Tuple;
 import spark.ModelAndView;
 import spark.Request;
 import spark.template.jade.JadeTemplateEngine;

@@ -309,6 +309,21 @@ public class CommandProcessor {
 		return this;
 	}
 
+	public CommandProcessor union(List<Tuple> other) {
+		// a.union b adds all tuples from b, which are not in a
+		for (Tuple t : other) {
+			boolean hasTuple =
+				this.resultSet.stream()
+					.filter(tuple -> tuple.equals(t))
+					.count() > 0;
+
+			if (!hasTuple)
+				this.resultSet.add(t);
+		}
+
+		return this;
+	}
+
 	public CommandProcessor limit(int size) {
 		this.resultSet = this.resultSet.subList(0, this.resultSet.size() < size ? this.resultSet.size() : size);
 		return this;

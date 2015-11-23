@@ -281,7 +281,9 @@ public class CommandProcessor {
 			this.resultSet = resultSet.stream()
 					.map(tuple -> {
 						Tuple t = new Tuple(tuple.getKeys());
-						t.build(tuple.serialize());
+						for (String key : tuple.getKeys()) {
+							t.set(key, tuple.get(key));
+						}
 						t.set(columnName, "" + resultSet.size());
 						return t;
 					})

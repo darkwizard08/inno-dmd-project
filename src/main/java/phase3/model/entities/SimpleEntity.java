@@ -61,4 +61,22 @@ public class SimpleEntity implements Writable, Comparable<SimpleEntity> {
 		}
 		return result != 0 ? result : this.id - o.id;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		SimpleEntity that = (SimpleEntity) o;
+
+		return id == that.id && !(attribute != null ? !attribute.equals(that.attribute) : that.attribute != null);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = attribute != null ? attribute.hashCode() : 0;
+		result = 31 * result + id;
+		return result;
+	}
 }

@@ -65,7 +65,7 @@ class DataManager {
 
 		// and deleting the record at given offset
 		storage.deleteTuple(pos, len);
-		tree.delete(key);
+		table.deleteTuple(tuple);
 	}
 
 	public List<Tuple> scan(String tableName) {

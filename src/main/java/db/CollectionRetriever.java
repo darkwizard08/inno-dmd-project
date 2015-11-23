@@ -5,177 +5,22 @@ import phase3.CommandProcessor;
 import phase3.model.tuple.Tuple;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class CollectionRetriever {
 	private static CollectionRetriever retr = null;
-	private final HashMap<String, String> queries, orderings, sortings, sortAttributes;
-	private final String limitOffset = "\nLIMIT %s\n" +
-			"OFFSET %s", orderBy = "\nORDER BY %s %s";
 	private final HashSet<String> types;
 
 	private final CommandProcessor cp;
 
 	private CollectionRetriever() {
 		this.cp = new CommandProcessor();
-		this.queries = new HashMap<>();
-		this.orderings = new HashMap<>();
-		this.sortings = new HashMap<>();
-		this.sortAttributes = new HashMap<>();
 		types = new HashSet<>(Arrays.asList("article", "proceedings", "inproceedings", "incollection", "book"));
 
-		orderings.put("year", "\"Publication\".\"Year\"");
-		orderings.put("cite", "rank_cnt");
-		orderings.put(null, "");
-
-		sortings.put("cite", "LEFT OUTER JOIN (SELECT \n" +
-				"  \"Referenced\".\"RefPubID\", COUNT(\"Referenced\".\"PubID\") as count\n" +
-				"FROM\n" +
-				"  public.\"Referenced\"\n" +
-				"GROUP BY\n" +
-				"  \"Referenced\".\"RefPubID\") AS rank ON (rank.\"RefPubID\" = \"Publication\".\"ID\")\n");
-		sortings.put("year", "");
-		sortings.put(null, "");
-
-		sortAttributes.put("cite", ",\n" +
-				" coalesce(rank.count, 0) as rank_cnt");
-		sortAttributes.put("year", "");
-		sortAttributes.put(null, "");
-
-		queries.put("researchArea", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Area\", \n" +
-				"  public.\"PubArea\", \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE \n" +
-				"  \"Area\".\"ID\" = \"PubArea\".\"AreaID\" AND\n" +
-				"  \"PubArea\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"Area\".\"Name\" like '%%%s%%'");
-
-		queries.put("authorName", "SELECT DISTINCT \n" +
-				" \"Publication\".*\n" +
-				"FROM \n" +
-				" public.\"InstAuthPub\", \n" +
-				" public.\"Publication\"\n" +
-				"WHERE \n" +
-				" \"Publication\".\"ID\" = \"InstAuthPub\".\"PubID\" AND\n" +
-				" \"InstAuthPub\".\"Author\" IN (\n" +
-				"   select \"Author\".\"Name\" \n" +
-				"   from public.\"Author\" \n" +
-				"   where \"Author\".\"ID\" in (\n" +
-				"     select \"Author\".\"ID\"\n" +
-				"     from public.\"Author\"\n" +
-				"     where \"Author\".\"Name\" like '%%%s%%'))");
-
-		queries.put("pubYear", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE \n" +
-				"  \"Publication\".\"Year\" = %s");
-
-		queries.put("pubTitle", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE \n" +
-				"  \"Publication\".\"Title\" like '%%%s%%'");
-
-		queries.put("keyword", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Keyword\", \n" +
-				"  public.\"PubKeyword\", \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE \n" +
-				"  \"Keyword\".\"ID\" = \"PubKeyword\".\"KeywordID\" AND\n" +
-				"  \"PubKeyword\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"Keyword\".\"Word\" like '%%%s%%'");
-
-		queries.put("pubType", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\", \n" +
-				"  public.\"%1$s\"\n" +
-				"WHERE \n" +
-				"  \"%1$s\".\"PubID\" = \"Publication\".\"ID\"");
-
-		queries.put("references", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\", \n" +
-				"  public.\"Referenced\"\n" +
-				"WHERE \n" +
-				"  \"Referenced\".\"RefPubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"Referenced\".\"PubID\" = %s");
-
-		queries.put("citedBy", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\", \n" +
-				"  public.\"Referenced\"\n" +
-				"WHERE \n" +
-				"  \"Referenced\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"Referenced\".\"RefPubID\" = %s");
-
-		queries.put("institution", "SELECT DISTINCT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\", \n" +
-				"  public.\"InstAuthPub\", \n" +
-				"  public.\"Institution\"\n" +
-				"WHERE \n" +
-				"  \"InstAuthPub\".\"PubID\" = \"Publication\".\"ID\" AND\n" +
-				"  \"InstAuthPub\".\"InstID\" = \"Institution\".\"ID\" AND\n" +
-				"  \"Institution\".\"Title\" like '%%%s%%'");
-
-		queries.put("venue", "SELECT \n" +
-				"  \"Publication\".*\n" +
-				"FROM \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE\n" +
-				"  \"Publication\".\"ID\" IN (\n" +
-				"  SELECT \n" +
-				"    \"Article\".\"PubID\"\n" +
-				"  FROM  \n" +
-				"    public.\"Article\"\n" +
-				"  WHERE \n" +
-				"    \"Article\".\"JournalID\" IN " +
-				"(SELECT \"Journal\".\"ID\" " +
-				"from public.\"Journal\" " +
-				"where \"Journal\".\"Title\" like '%%%1$s%%')\n" +
-				"\n" +
-				"  UNION\n" +
-				"\n" +
-				"  SELECT \n" +
-				"    \"Proceedings\".\"PubID\"\n" +
-				"  FROM  \n" +
-				"    public.\"Proceedings\"\n" +
-				"  WHERE \n" +
-				"    \"Proceedings\".\"ConferenceID\" IN " +
-				"(SELECT \"Conference\".\"ID\" " +
-				"from public.\"Conference\" " +
-				"where \"Conference\".\"Title\" like '%%%1$s%%')\n" +
-				"\n" +
-				"  UNION\n" +
-				"\n" +
-				"  SELECT \n" +
-				"    \"Inproceedings\".\"PubID\"\n" +
-				"  FROM  \n" +
-				"    public.\"Inproceedings\"\n" +
-				"  WHERE \n" +
-				"    \"Inproceedings\".\"Crossref\" IN (\n" +
-				"    SELECT \n" +
-				"      \"Proceedings\".\"PubID\"\n" +
-				"    FROM  \n" +
-				"      public.\"Proceedings\"\n" +
-				"    WHERE \n" +
-				"      \"Proceedings\".\"ConferenceID\" IN " +
-				"(SELECT \"Conference\".\"ID\" " +
-				"from public.\"Conference\"" +
-				" where \"Conference\".\"Title\" like '%%%1$s%%')))");
 	}
 
 	public static CollectionRetriever getInstance() {
@@ -183,13 +28,6 @@ public class CollectionRetriever {
 			retr = new CollectionRetriever();
 		return retr;
 	}
-
-	/* template
-	public List<Object> getPublicationsOn...(String searchFor) {
-		String query = ...;
-		return this.processResult(conn.getRawQueryResult(query), Publication.class);
-	}
-	 */
 
 	public static String convertListOfTuplesToString(List<Tuple> list) {
 		List<String> res = list.stream()
@@ -540,7 +378,7 @@ public class CollectionRetriever {
 				.filter("Journal.Title = " + title)
 				.filter("Journal.Volume = " + volume)
 				.filter("Journal.Number = " + number)
-				.project("Journal.ID", "Journal.Title", "Journal.Volume", "Journal.Number")
+				.project("Journal.ID", "Journal.Title", "Journal.Volume", "Journal.Number", "Journal.Name")
 				.list();
 
 		List<Object> result = processResult(journals, Journal.class);

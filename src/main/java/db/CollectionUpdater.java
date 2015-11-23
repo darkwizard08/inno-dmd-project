@@ -4,175 +4,15 @@ import model.*;
 import phase3.CommandProcessor;
 import phase3.model.tuple.Tuple;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CollectionUpdater {
 	private static CollectionUpdater updtr = null;
-	private final HashMap<String, String> update, delete, insert;
 	private CommandProcessor cp;
 
 	private CollectionUpdater() {
 		this.cp = new CommandProcessor();
-		update = new HashMap<>();
-		delete = new HashMap<>();
-		insert = new HashMap<>();
-
-		update.put("publication", "UPDATE \n" +
-				"  public.\"Publication\"\n" +
-				"SET\n" +
-				"  \"Title\" = '%s', \"Year\" = %s\n" +
-				"WHERE\n" +
-				"  \"ID\" = %s");
-		update.put("article", "UPDATE\n" +
-				"  public.\"Article\"\n" +
-				"SET\n" +
-				"  \"JournalID\" = %s,\"Pages\" = %s\n" +
-				"WHERE   \n" +
-				"  \"PubID\" = %s");
-		update.put("inproceedings", "UPDATE\n" +
-				"  public.\"Inproceedings\"\n" +
-				"SET \n" +
-				"  \"Crossref\" = %s, \"Pages\" = %s\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		update.put("proceedings", "UPDATE\n" +
-				"  public.\"Proceedings\"\n" +
-				"SET  \n" +
-				"  \"ConferenceID\" = %s\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		update.put("incollection", "UPDATE\n" +
-				"  public.\"Incollection\"\n" +
-				"SET\n" +
-				"  \"Crossref\" = %s, \"Pages\" = %s\n" +
-				"WHERE\n" +
-				"  \"PubID\" = %s");
-		update.put("book", "UPDATE\n" +
-				"  public.\"Book\"\n" +
-				"SET\n" +
-				"  \"Volume\" = %s\n" +
-				"WHERE\n" +
-				"  \"PubID\" = %s");
-
-		delete.put("publication", "DELETE \n" +
-				"FROM \n" +
-				"  public.\"Publication\"\n" +
-				"WHERE\n" +
-				"  \"ID\" = %s");
-		delete.put("article", "DELETE \n" +
-				"FROM \n" +
-				"  public.\"Article\"\n" +
-				"WHERE\n" +
-				"  \"PubID\" = %s");
-		delete.put("proceedings", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"Proceedings\"\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		delete.put("inproceedings", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"Inroceedings\"\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		delete.put("book", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"Book\"\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		delete.put("incollection", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"Incollection\"\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-
-		delete.put("pubArea", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"PubArea\"\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		delete.put("pubKeyword", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"PubKeyword\"\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		delete.put("instAuthPub", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"InstAuthPub\"\n" +
-				"WHERE \n" +
-				"  \"PubID\" = %s");
-		delete.put("published", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"Published\"\n" +
-				"WHERE \n" +
-				"  \"PublicationID\" = %s");
-		delete.put("referenced", "DELETE\n" +
-				"FROM \n" +
-				"  public.\"Referenced\"\n" +
-				"WHERE \n" +
-				"  \"Referenced\".\"PubID\" = %s AND \n" +
-				"  \"Referenced\".\"RefPubID\" = %s");
-
-		insert.put("publication", "INSERT \n" +
-				"INTO \n" +
-				"  \"Publication\"(\"Title\", \"Year\", \"Type\")\n" +
-				"VALUES\n" +
-				"  ('%s', %s, '%s')\n" +
-				"RETURNING\n" +
-				"  \"ID\"");
-
-		insert.put("article", "INSERT \n" +
-				"INTO\n" +
-				"  \"Article\"(\"PubID\", \"JournalID\", \"Pages\")\n" +
-				"VALUES\n" +
-				"  (%s, %s, %s)");
-		insert.put("inproceedings", "INSERT\n" +
-				"INTO\n" +
-				"  \"Inproceedings\"(\"PubID\", \"Crossref\", \"Pages\")\n" +
-				"VALUES\n" +
-				"  (%s, %s, %s)");
-		insert.put("proceedings", "INSERT \n" +
-				"INTO\n" +
-				"  \"Proceedings\"(\"PubID\", \"ConferenceID\")\n" +
-				"VALUES\n" +
-				"  (%s, %s)");
-		insert.put("incollection", "INSERT\n" +
-				"INTO\n" +
-				"  \"Incollection\"(\"PubID\", \"Crossref\", \"Pages\")\n" +
-				"VALUES\n" +
-				"  (%s, %s, %s)");
-		insert.put("book", "INSERT\n" +
-				"INTO\n" +
-				"  \"Book\"(\"PubID\", \"Volume\")\n" +
-				"VALUES\n" +
-				"  (%s, %s)");
-
-		insert.put("instAuthPub", "INSERT \n" +
-				"INTO\n" +
-				"  \"InstAuthPub\"(\"PubID\", \"InstID\", \"Author\")\n" +
-				"VALUES\n" +
-				"  (%s, %s, '%s')");
-		insert.put("pubArea", "INSERT\n" +
-				"INTO \n" +
-				"  \"PubArea\"(\"PubID\", \"AreaID\")\n" +
-				"VALUES \n" +
-				"  (%s, %s)");
-		insert.put("pubKeyword", "INSERT\n" +
-				"INTO \n" +
-				"  \"PubKeyword\"(\"PubID\", \"KeywordID\")\n" +
-				"VALUES\n" +
-				"  (%s, %s)");
-		insert.put("published", "INSERT\n" +
-				"INTO\n" +
-				"  \"Published\"(\"PublicationID\", \"PublisherID\")\n" +
-				"VALUES\n" +
-				"  (%s, %s)");
-		insert.put("referenced", "INSERT\n" +
-				"INTO\n" +
-				"  \"Referenced\"(\"PubID\", \"RefPubID\")\n" +
-				"VALUES\n" +
-				"  (%s, %s)");
 	}
 
 	public static CollectionUpdater getInstance() {
@@ -198,7 +38,6 @@ public class CollectionUpdater {
 		params.put("ID", id);
 
 			params.put("cID", addCollection(params));
-
 
 			switch (params.get("type")) {
 				case "article":
@@ -364,7 +203,7 @@ public class CollectionUpdater {
 
 		cp.scan("Publication").filter("Publication.ID = " + ID).delete("Publication");
 
-		cp.scan(type).filter(type + ".ID = " + ID).delete(type);
+		cp.scan(type).filter(type + ".PubID = " + ID).delete(type);
 
 		cp.scan("PubArea").filter("PubArea.PubID = " + ID).delete("PubArea");
 

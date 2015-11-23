@@ -49,6 +49,13 @@ public class Table implements Writable {
 				.forEach(e -> e.getValue().insert(new SimpleEntity(tuple, e.getKey()), new Pair(block, length)));
 	}
 
+	public void deleteTuple(Tuple tuple) {
+		map.entrySet()
+				.stream()
+				.filter(e -> e.getValue() != null)
+				.forEach(e -> e.getValue().delete(new SimpleEntity(tuple, e.getKey())));
+	}
+
 	public Tuple buildTuple(String... values) {
 		return this.tupleBuilder.create(values);
 	}

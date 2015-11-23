@@ -1,12 +1,12 @@
-/*
 import phase3.CommandProcessor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class Transfer {
 	public static void main(String[] args) {
 		CommandProcessor cp = new CommandProcessor();
+		DBConnector conn = DBConnector.getInstance();
+		conn.connect();
 
 		cp.create("Area", "id", "ID", "Name");
 		cp.create("Incollection", "id", "PubID", "Crossref", "Pages");
@@ -232,6 +232,61 @@ public class Transfer {
 
 
 		cp.close();
+		conn.closeConnection();
+	}
+
+	public static class DBConnector {
+
+		private static DBConnector connector = null;
+		private Connection conn = null;
+
+		private DBConnector() {
+		}
+
+		public static DBConnector getInstance() {
+			if (connector == null)
+				connector = new DBConnector();
+			return connector;
+		}
+
+		public void connect() {
+			try {
+				//Class.forName("postgresql.Driver");
+
+				conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/project", "postgres", "kh,UMg@~a8m'$F^s");
+				System.out.println(conn);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		public ResultSet getRawQueryResult(String rawSQLQuery) {
+			try {
+				Statement st = conn.createStatement();
+				return st.executeQuery(rawSQLQuery);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw new Error("Please, check your params!");
+			}
+
+		}
+
+		public int executeNonQuery(String rawSQLQuery) {
+			try {
+				Statement st = conn.createStatement();
+				return st.executeUpdate(rawSQLQuery);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw new Error("Please, check your params!");
+			}
+		}
+
+		public void closeConnection() {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
-*/

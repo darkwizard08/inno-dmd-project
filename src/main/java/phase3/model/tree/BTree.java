@@ -58,7 +58,7 @@ public class BTree implements Writable {
 		int index = leaf.search(key);
 		leaf.setValue(index, value);
 		pairs.parallelStream()
-				.filter(t -> t.getKey() == key)
+				.filter(t -> t.getKey().equals(key))
 				.forEach(t -> t = new javafx.util.Pair<>(key, value));
 		sort();
 	}
@@ -74,6 +74,8 @@ public class BTree implements Writable {
 			if (n != null)
 				this.root = n;
 		}
+
+		pairs.removeIf(t -> t.getKey().equals(key));
 	}
 
 	/**

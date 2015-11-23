@@ -8,6 +8,7 @@ import phase3.model.tuple.TupleBuilder;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.List;
 
 public class Table implements Writable {
 	//name of the table
@@ -156,5 +157,9 @@ public class Table implements Writable {
 	 */
 	public BTree getTree(String attribute) {
 		return map.get(attribute);
+	}
+
+	public List<String> attributes() {
+		return tupleBuilder.attributes();
 	}
 }

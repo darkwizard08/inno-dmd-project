@@ -4,8 +4,6 @@ import model.*;
 import phase3.CommandProcessor;
 import phase3.model.tuple.Tuple;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -404,7 +402,7 @@ public class CollectionUpdater {
 		int newId = i(getNewID("Journal", "Journal.ID"));
 		cp.init().insert("Journal",
 				id("Journal"), newId + "",
-				title, volume, number);
+				title, volume, number, "");
 
 		return new Journal(newId, title, volume, number, null);
 

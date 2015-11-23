@@ -166,6 +166,85 @@ public class CommandProcessor {
 		return this;
 	}
 
+	public CommandProcessor join(String tableName, List<Tuple> anotherTable, String onLeft, String onRight, String joinType) {
+		List<String> tableAttrs = dm.getTable(tableName).attributes();
+		List<Tuple> finalSet = new ArrayList<>();
+
+		if (joinType.equals("CROSS")) {
+			for (Tuple t : resultSet) {
+				for (Tuple t2 : anotherTable) {
+					Tuple res = new Tuple(t.getKeys());
+					res.build(t.serialize());
+					res.merge(t2);
+					finalSet.add(res);
+				}
+			}
+			this.resultSet = finalSet;
+			return this;
+		}
+
+		for (int i = 0; i < this.resultSet.size(); ++i) {
+			Tuple merging = this.resultSet.get(i);
+			int num = merging.getKeys().size();
+			anotherTable
+					.stream()
+					.filter(tuple -> merging.get(onLeft).equals(tuple.get(onRight)))
+					.forEach(merging::merge);
+
+			if (merging.getKeys().size() > num) {
+				System.out.println("Merged " + merging);
+				finalSet.add(merging);
+			} else if (joinType.equals("LEFT OUTER")) {
+				Tuple t = new Tuple(anotherTable.size() > 0 ? anotherTable.get(0).getKeys() : tableAttrs);
+				merging.merge(t);
+				finalSet.add(merging);
+				System.out.println("LEFT OUTER MERGE");
+			}
+		}
+
+		this.resultSet = finalSet;
+		return this;
+	}
+
+	public CommandProcessor join(List<String> attributes, List<Tuple> anotherTable, String onLeft, String onRight, String joinType) {
+		List<Tuple> finalSet = new ArrayList<>();
+
+		if (joinType.equals("CROSS")) {
+			for (Tuple t : resultSet) {
+				for (Tuple t2 : anotherTable) {
+					Tuple res = new Tuple(t.getKeys());
+					res.build(t.serialize());
+					res.merge(t2);
+					finalSet.add(res);
+				}
+			}
+			this.resultSet = finalSet;
+			return this;
+		}
+
+		for (int i = 0; i < this.resultSet.size(); ++i) {
+			Tuple merging = this.resultSet.get(i);
+			int num = merging.getKeys().size();
+			anotherTable
+					.stream()
+					.filter(tuple -> merging.get(onLeft).equals(tuple.get(onRight)))
+					.forEach(merging::merge);
+
+			if (merging.getKeys().size() > num) {
+				System.out.println("Merged " + merging);
+				finalSet.add(merging);
+			} else if (joinType.equals("LEFT OUTER")) {
+				Tuple t = new Tuple(attributes);
+				merging.merge(t);
+				finalSet.add(merging);
+				System.out.println("LEFT OUTER MERGE");
+			}
+		}
+
+		this.resultSet = finalSet;
+		return this;
+	}
+
 	/**
 	 * group by the table by the certain attribute
 	 *
@@ -268,15 +347,16 @@ public class CommandProcessor {
 		return this;
 	}
 
-	public CommandProcessor coalesce(String param) {
-		this.resultSet.stream().forEach(tuple ->
+	public CommandProcessor coalesce(String param, String value) {
+		/*this.resultSet.stream().forEach(tuple ->
 						tuple.getKeys().stream()
 								.forEach(s -> {
 											if (tuple.get(s).equals(""))
 												tuple.set(s, param);
 										}
 								)
-		);
+		);*/
+		this.resultSet.stream().forEach(t -> t.set(param, value));
 
 		return this;
 	}

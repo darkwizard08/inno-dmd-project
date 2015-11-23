@@ -102,5 +102,9 @@ public class TupleBuilder implements Writable {
 
 		return length + 4 + (count * 4);
 	}
+
+	public List<String> attributes() {
+		return attrs;
+	}
 }
 

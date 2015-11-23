@@ -212,7 +212,7 @@ public class Transfer {
 		}
 
 		// Referenced
-		cp.create("Referenced", "id", "PubID", "RefPub");
+		cp.create("Referenced", "id", "PubID", "RefPubID");
 
 		rs = conn.getRawQueryResult("SELECT \n" +
 				"  * \n" +

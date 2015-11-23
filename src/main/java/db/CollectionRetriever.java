@@ -5,7 +5,6 @@ import phase3.CommandProcessor;
 import phase3.model.tuple.Tuple;
 
 import java.lang.reflect.Constructor;
-import java.sql.ResultSet;
 import java.util.*;
 
 public class CollectionRetriever {
@@ -226,11 +225,13 @@ public class CollectionRetriever {
 				break;
 			case "pubYear":
 				cp.scan("Publication")
-						.filter("Publication.Year = " + searchFor);
+						.filter("Publication.Year = " + searchFor)
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
 				break;
 			case "pubTitle":
 				cp.scan("Publication")
-						.filter("Publication.Title");
+						.filter("Publication.Title")
+						.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type");
 				break;
 			case "keyword":
 				List<Tuple> keyword = cp.scan("Keyword")
@@ -281,7 +282,7 @@ public class CollectionRetriever {
 							.rename("Referenced.RefPubID", "rank.RefPubID")
 							.rename("count(Referenced.PubID)", "rank.count");
 					cp.join(rank.list(), "Publication.ID", "rank.RefPubID", "LEFT OUTER")
-							.coalesce("0").sort("rank.count", orderType);
+							.coalesce("rank.count", "0").sort("rank.count", orderType);
 				case "year":
 					cp.sort("Publication.Year", orderType);
 			}
@@ -297,7 +298,7 @@ public class CollectionRetriever {
 	}
 
 	public int i(String conv) {
-		return Integer.parseInt(conv);
+		return conv.length() > 0 ? Integer.parseInt(conv) : 0;
 	}
 
 	public FullInfo getFullPublicationInfo(int pubId) {
@@ -310,26 +311,27 @@ public class CollectionRetriever {
 
 		List<Tuple> res = cp.init().scan("Publication")
 				.filter("Publication.ID = " + pubId)
-				.join(pubarea, "Publication.ID", "PubArea.PubID", "LEFT OUTER")
-				.join(pubkeyw, "Publication.ID", "PubKeyword.PubID", "LEFT OUTER")
-				.join(area, "PubArea.ID", "Area.ID", "LEFT OUTER")
-				.join(keyw, "PubKeyword.KeywordID", "Keyword.ID", "LEFT OUTER")
-				.join(published, "Publication.ID", "Published.PublicationID", "LEFT OUTER")
-				.join(publ, "Publisher.ID", "Published.PublisherID", "LEFT OUTER")
+				.join("PubArea", pubarea, "Publication.ID", "PubArea.PubID", "LEFT OUTER")
+				.join("PubKeyword", pubkeyw, "Publication.ID", "PubKeyword.PubID", "LEFT OUTER")
+				.join("Area", area, "PubArea.AreaID", "Area.ID", "LEFT OUTER")
+				.join("Keyword", keyw, "PubKeyword.KeywordID", "Keyword.ID", "LEFT OUTER")
+				.join("Published", published, "Publication.ID", "Published.PublicationID", "LEFT OUTER")
+				.join("Publisher", publ, "Published.PublisherID", "Publisher.ID", "LEFT OUTER")
+				.project("Publication.Title", "Publication.Year", "Publication.Type",
+						"Area.ID", "Area.Name", "Keyword.ID", "Keyword.Word", "Publisher.ID", "Publisher.Name")
 				.list();
 
 			for (Tuple tp : res) {
 				Publication publication = new Publication(
-						Integer.parseInt(tp.get("Publication.ID")),
-						tp.get("Publication.title"),
+						pubId,
+						tp.get("Publication.Title"),
 						Integer.parseInt(tp.get("Publication.Year")),
 						tp.get("Publication.Type")
 				);
-				Area a = new Area(Integer.parseInt(tp.get("Area.ID")), tp.get("Area.Name"));
-				Keyword keyword = new Keyword(Integer.parseInt(tp.get("Keyword.ID")), tp.get("Keyword.word"));
+				Area a = new Area(i(tp.get("Area.ID")), tp.get("Area.Name"));
+				Keyword keyword = new Keyword(i(tp.get("Keyword.ID")), tp.get("Keyword.Word"));
 				Publisher publisher = new Publisher(i(tp.get("Publisher.ID")), tp.get("Publisher.Name"));
 
-				ResultSet rs2;
 				FullInfo result = null;
 				switch (publication.getType()) {
 					case "article":
@@ -444,7 +446,7 @@ public class CollectionRetriever {
 				List<Tuple> instauthpub = cp.init()
 						.scan("InstAuthPub")
 						.filter("InstAuthPub.PubID = " + pubId)
-						.join(institutions, "InstAuthPub.InstID", "Instituition.ID", "LEFT OUTER")
+						.join("Institution", institutions, "InstAuthPub.InstID", "Institution.ID", "LEFT OUTER")
 						.join(authors, "InstAuthPub.Author", "Author.Name", "INNER")
 						.project("Author.ID", "InstAuthPub.Author", "Institution.ID", "Institution.Title")
 						.list();
@@ -472,7 +474,7 @@ public class CollectionRetriever {
 				Object[] array = new Object[c.getParameterCount()];
 				for (int i = 0; i < c.getParameterCount(); ++i)
 					array[i] = ("" + c.getParameterTypes()[i].getSimpleName()).compareTo("int") == 0
-							? Integer.parseInt(t.get(i)) : t.get(i);
+							? i(t.get(i)) : t.get(i);
 
 				Object instance = c.newInstance(array);
 
@@ -496,6 +498,7 @@ public class CollectionRetriever {
 				.filter("Journal.Title = " + title)
 				.filter("Journal.Volume = " + volume)
 				.filter("Journal.Number = " + number)
+				.project("Journal.ID", "Journal.Title", "Journal.Volume", "Journal.Number")
 				.list();
 
 		List<Object> result = processResult(journals, Journal.class);
@@ -507,6 +510,7 @@ public class CollectionRetriever {
 				.scan("Conference")
 				.filter("Conference.Title = " + title)
 				.filter("Conference.Volume = " + volume)
+				.project("Conference.ID", "Conference.Title", "Conference.Volume")
 				.list();
 
 		List<Object> result = processResult(conf, Conference.class);
@@ -552,6 +556,7 @@ public class CollectionRetriever {
 		List<Tuple> areas = cp.init()
 				.scan("Area")
 				.filter("Area.Name = " + name)
+				.project("Area.ID", "Area.Name")
 				.list();
 
 		List<Object> result = processResult(areas, Area.class);
@@ -559,13 +564,14 @@ public class CollectionRetriever {
 	}
 
 	public Keyword getKeyword(String word) {
-		List<Tuple> krywords = cp.init()
+		List<Tuple> keywords = cp.init()
 				.scan("Keyword")
 				.filter("Keyword.Word = " + word)
+				.project("Keyword.ID", "Keyword.Word")
 				.list();
 
 
-		List<Object> result = processResult(krywords, Keyword.class);
+		List<Object> result = processResult(keywords, Keyword.class);
 		return result.size() > 0 ? (Keyword) result.get(0) : null;
 	}
 
@@ -573,6 +579,7 @@ public class CollectionRetriever {
 		List<Tuple> inst = cp.init()
 				.scan("Institution")
 				.filter("Institution.Title = " + title)
+				.project("Institution.ID", "Institution.Title")
 				.list();
 		List<Object> result = processResult(inst, Institution.class);
 		return result.size() > 0 ? (Institution) result.get(0) : null;
@@ -582,6 +589,7 @@ public class CollectionRetriever {
 		List<Tuple> inst = cp.init()
 				.scan("Publisher")
 				.filter("Publisher.Name = " + name)
+				.project("Publisher.ID", "Publisher.Name")
 				.list();
 
 		List<Object> result = processResult(inst, Publisher.class);
@@ -592,6 +600,7 @@ public class CollectionRetriever {
 		List<Tuple> auth = cp.init()
 				.scan("Author")
 				.filter("Author.Name = " + name)
+				.project("Author.ID", "Author.Name")
 				.list();
 
 		List<Object> result = processResult(auth, Author.class, 1);
@@ -609,6 +618,7 @@ public class CollectionRetriever {
 		List<Tuple> pubs = cp.init()
 				.scan("Publication")
 				.join(smth, "Publication.ID", type + ".PubID", "INNER")
+				.project("Publication.ID", "Publication.Title", "Publication.Year", "Publication.Type")
 				.list();
 
 		return processResult(pubs, Publication.class);
